@@ -1,0 +1,17 @@
+source_schema,source_table,source_column,target_schema,target_table,target_column,transformation_type,transformation_logic
+landing,Financial Sample,Segment,bronze,financial_sample,segment,Direct Map,No transformation
+landing,Financial Sample,Country,bronze,financial_sample,country,Direct Map,No transformation
+landing,Financial Sample, Product ,bronze,financial_sample,product,Direct Map,No transformation
+landing,Financial Sample, Discount Band ,bronze,financial_sample,discount_band,Direct Map,No transformation
+landing,Financial Sample,Units Sold,bronze,financial_sample,units_sold,Direct Map,No transformation
+landing,Financial Sample, Manufacturing Price ,bronze,financial_sample,manufacturing_price,Direct Map,No transformation
+landing,Financial Sample, Sale Price ,bronze,financial_sample,sale_price,Direct Map,No transformation
+landing,Financial Sample, Gross Sales ,bronze,financial_sample,gross_sales,Direct Map,No transformation
+landing,Financial Sample, Discounts ,bronze,financial_sample,discounts,Direct Map,No transformation
+landing,Financial Sample,  Sales ,bronze,financial_sample,sales,Direct Map,No transformation
+landing,Financial Sample, COGS ,bronze,financial_sample,cogs,Direct Map,No transformation
+landing,Financial Sample, Profit ,bronze,financial_sample,profit,Direct Map,No transformation
+landing,Financial Sample,Date,bronze,financial_sample,date,Direct Map,No transformation
+landing,Financial Sample,Month Number,bronze,financial_sample,month_number,Direct Map,No transformation
+landing,Financial Sample, Month Name ,bronze,financial_sample,month_name,Direct Map,No transformation
+landing,Financial Sample,Year,bronze,financial_sample,year,Direct Map,No transformation
