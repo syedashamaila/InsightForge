@@ -1,0 +1,436 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BI Report - c09bef32-9b42-482d-a8d7-885767108fd5</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }
+        
+        .section h3 {
+            color: #764ba2;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+        
+        .section p {
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        
+        .section ul {
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .section li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .card-title {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .footer {
+            background: #f0f0f0;
+            padding: 20px 30px;
+            text-align: center;
+            border-top: 1px solid #ddd;
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            .header h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Business Intelligence Report</h1>
+            <p>Run ID: c09bef32-9b42-482d-a8d7-885767108fd5</p>
+        </div>
+        
+        <div class="content">
+            
+        <div class="section">
+            <h2>Executive Summary</h2>
+            <div class="content">
+                <p>Executive summary generation pending. Please refer to the detailed sections below.</p>
+            </div>
+        </div>
+        
+            
+            
+        <div class="section">
+            <h2>Business Goal</h2>
+            <div class="content">
+                <p>Not specified</p>
+            </div>
+        </div>
+        
+            
+            <div class="section">
+                <h2>Requirements</h2>
+                <div class="grid">
+                    <div class="card">
+                        <div class="card-title">Key Performance Indicators</div>
+                        <ul>
+                            <li>{&#39;name&#39;: &#39;Total Suppliers&#39;, &#39;target&#39;: &#39;&#39;, &#39;description&#39;: &#39;The total number of active suppliers across all business units.&#39;}</li><li>{&#39;name&#39;: &#39;High Risk Suppliers&#39;, &#39;target&#39;: &#39;&#39;, &#39;description&#39;: &quot;The count of suppliers classified as &#39;High Risk&#39; based on predefined business thresholds.&quot;}</li><li>{&#39;name&#39;: &#39;Medium Risk Suppliers&#39;, &#39;target&#39;: &#39;&#39;, &#39;description&#39;: &quot;The count of suppliers classified as &#39;Medium Risk&#39; based on predefined business thresholds.&quot;}</li><li>{&#39;name&#39;: &#39;Low Risk Suppliers&#39;, &#39;target&#39;: &#39;&#39;, &#39;description&#39;: &quot;The count of suppliers classified as &#39;Low Risk&#39; based on predefined business thresholds.&quot;}</li><li>{&#39;name&#39;: &#39;Average Supplier Risk Score&#39;, &#39;target&#39;: &#39;&#39;, &#39;description&#39;: &#39;The average calculated risk score across all monitored suppliers.&#39;}</li><li>{&#39;name&#39;: &#39;On-Time Delivery Percentage&#39;, &#39;target&#39;: &#39;&#39;, &#39;description&#39;: &#39;The percentage of orders or deliveries from suppliers that meet the promised delivery date.&#39;}</li><li>{&#39;name&#39;: &#39;Quality Rating&#39;, &#39;target&#39;: &#39;&#39;, &#39;description&#39;: &#39;A quantitative measure or score reflecting the quality performance of suppliers.&#39;}</li><li>{&#39;name&#39;: &#39;Purchase Spend&#39;, &#39;target&#39;: &#39;&#39;, &#39;description&#39;: &#39;The total monetary value of purchases made from all suppliers.&#39;}</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Measures</div>
+                        <ul>
+                            <li>Total Suppliers</li><li>High Risk Suppliers</li><li>Medium Risk Suppliers</li><li>Low Risk Suppliers</li><li>Average Supplier Risk Score</li><li>On-Time Delivery Percentage</li><li>Quality Rating</li><li>Purchase Spend</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Dimensions</div>
+                        <ul>
+                            <li>Business Unit</li><li>Supplier</li><li>Supplier Risk Classification (High, Medium, Low)</li><li>Time (e.g., Year, Quarter, Month, Week)</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Filters</div>
+                        <ul>
+                            <li>Business Unit</li><li>Supplier Risk Classification</li><li>Time Period (e.g., Last 30 Days, Last Quarter, Year-to-Date)</li><li>Individual Supplier</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            
+        <div class="section">
+            <h2>Clarifications</h2>
+            <div class="content">
+                <p>No clarifications recorded.</p>
+            </div>
+        </div>
+        
+            
+            <div class="section">
+                <h2>Dashboard Prototype</h2>
+                <h3>Dashboard</h3>
+                <p></p>
+                <h3>Recommended Visualizations</h3>
+                <ul>
+                    <li>No visualizations planned</li>
+                </ul>
+                
+            </div>
+            
+            
+        <div class="section">
+            <h2>Recommendations</h2>
+            <div class="content">
+                <p>Recommendations will be finalized during implementation.</p>
+            </div>
+        </div>
+        
+            
+            
+        <div class="section">
+            <h2>Implementation Notes</h2>
+            <div class="content">
+                <p>Here are detailed implementation notes for building the Supplier Dashboard, structured for clarity and actionability.
+
+---
+
+## Dashboard: Supplier Performance &amp; Risk Overview
+
+**Description:** This dashboard provides a consolidated view of supplier performance metrics, including risk assessment, delivery reliability, quality, and spend, allowing stakeholders to monitor and manage their supplier base effectively.
+
+---
+
+### I. Data Preparation
+
+**Objective:** Consolidate, clean, transform, and model data from various source systems into a unified, query-optimized format for the dashboard.
+
+**1. Identify Core Data Sources:**
+
+*   **ERP System (e.g., SAP, Oracle EBS, Microsoft Dynamics):**
+    *   Supplier Master Data (Supplier ID, Name, Business Unit, Address)
+    *   Purchase Orders (PO Number, Order Date, Required Delivery Date, Actual Delivery Date, Line Items, Quantity, Unit Price)
+    *   Invoices (Invoice Date, Amount - for spend validation, though POs often drive spend analysis)
+*   **Supplier Risk Management System (or internal assessments):**
+    *   Supplier Risk Assessments (Supplier ID, Assessment Date, Risk Score, Risk Factors)
+*   **Quality Management System (or inspection logs):**
+    *   Quality Inspection Results (Supplier ID, Inspection Date, Product/Service, Quality Rating/Score, Defect Count)
+*   **Other (e.g., SRM, Contract Management):**
+    *   Any additional supplier attributes or contractual agreements.
+
+**2. Data Extraction &amp; Ingestion:**
+
+*   **Methodology:**
+    *   **APIs:** Preferred for real-time or near real-time data from modern systems.
+    *   **Database Connectors (JDBC/ODBC):** For direct access to source databases (read-only access is crucial).
+    *   **File Exports (CSV, Excel):** For systems without direct API/DB access, or for infrequent data updates. Automate exports where possible.
+*   **Target:** Ingest raw data into a Data Lake (e.g., AWS S3, Azure Data Lake Storage, Google Cloud Storage) for initial storage and subsequent transformation.
+
+**3. Data Transformation (ETL/ELT Logic):**
+
+*   **Supplier Master Consolidation:**
+    *   Create a `Dim_Supplier` table: `Supplier_ID`, `Supplier_Name`, `Business_Unit`, `Region`, `Contact_Info`, etc.
+    *   Ensure unique `Supplier_ID` and consistent `Business_Unit` naming.
+*   **Supplier Risk Data:**
+    *   Load `Supplier_Risk_Assessments` into a staging table.
+    *   **Derive `Supplier Risk Classification`:**
+        *   Apply business rules to `Risk_Score` (e.g., `IF Score &gt;= 80 THEN &#39;High&#39; ELSE IF Score &gt;= 50 THEN &#39;Medium&#39; ELSE &#39;Low&#39; END`).
+        *   Take the *latest* risk assessment for each supplier for current classification.
+    *   Store in `Fact_Supplier_Risk` (Supplier_ID, Assessment_Date, Risk_Score, Risk_Classification).
+*   **Purchase Order &amp; Delivery Data:**
+    *   Load `Purchase_Orders` line items.
+    *   **Calculate `On-Time Delivery` status:** `IF Actual_Delivery_Date &lt;= Required_Delivery_Date THEN 1 ELSE 0 END`. Handle null `Actual_Delivery_Date` (e.g., as &#39;Pending&#39; or &#39;Late&#39; if past `Required_Delivery_Date`).
+    *   **Calculate `Purchase Spend`:** `SUM(Quantity * Unit_Price)` for each line item, aggregated by PO, Supplier, and Time.
+    *   Store in `Fact_Purchase_Orders` (PO_ID, Supplier_ID, Order_Date, Required_Delivery_Date, Actual_Delivery_Date, On_Time_Status, Line_Item_Spend).
+*   **Quality Data:**
+    *   Load `Quality_Inspection_Results`.
+    *   Standardize `Quality_Rating` or `Quality_Score` if from different systems.
+    *   Store in `Fact_Quality_Inspections` (Supplier_ID, Inspection_Date, Product/Service, Quality_Rating/Score, Defect_Count).
+
+**4. Data Modeling (Star Schema Recommended):**
+
+*   **Fact Tables:**
+    *   `Fact_Supplier_Performance`: Contains measures and foreign keys to dimensions.
+        *   `Date_Key`, `Supplier_Key`, `Business_Unit_Key`
+        *   `Latest_Risk_Score`, `Latest_Risk_Classification`
+        *   `Total_Orders_Count`, `On_Time_Orders_Count`, `Total_Spend`
+        *   `Avg_Quality_Score`, `Total_Inspections_Count`
+    *   `Fact_Purchase_Orders` (as described above, can be separate or integrated).
+    *   `Fact_Supplier_Risk` (as described above, can be separate or integrated).
+*   **Dimension Tables:**
+    *   `Dim_Supplier`: `Supplier_Key` (PK), `Supplier_ID`, `Supplier_Name`, `Business_Unit`, `Region`, etc.
+    *   `Dim_Date`: `Date_Key` (PK), `Date`, `Year`, `Quarter`, `Month`, `Week_Number`, `Day_of_Week`, etc. (Essential for time-based filtering and aggregation).
+    *   `Dim_Business_Unit`: `Business_Unit_Key` (PK), `Business_Unit_Name`.
+
+**5. Measure &amp; Dimension Calculation Logic (within ETL/ELT):**
+
+*   **Total Suppliers:** `COUNT(DISTINCT Supplier_Key)` from `Dim_Supplier`.
+*   **High/Medium/Low Risk Suppliers:** `COUNT(DISTINCT Supplier_Key)` where `Latest_Risk_Classification` = &#39;High&#39;/&#39;Medium&#39;/&#39;Low&#39; from `Fact_Supplier_Performance`.
+*   **Average Supplier Risk Score:** `AVG(Latest_Risk_Score)` from `Fact_Supplier_Performance`.
+*   **On-Time Delivery Percentage:** `(SUM(On_Time_Orders_Count) / SUM(Total_Orders_Count)) * 100` from `Fact_Supplier_Performance` or `Fact_Purchase_Orders`.
+*   **Quality Rating:** `AVG(Avg_Quality_Score)` from `Fact_Supplier_Performance` or `Fact_Quality_Inspections`.
+*   **Purchase Spend:** `SUM(Total_Spend)` from `Fact_Supplier_Performance` or `Fact_Purchase_Orders`.
+*   **Dimensions:**
+    *   `Business Unit`: Directly from `Dim_Supplier` or `Dim_Business_Unit`.
+    *   `Supplier`: Directly from `Dim_Supplier`.
+    *   `Supplier Risk Classification`: From `Fact_Supplier_Performance` (derived in ETL).
+    *   `Time`: Link to `Dim_Date` using `Date_Key`.
+
+**6. Data Quality &amp; Validation:**
+
+*   **Missing Values:** Implement rules for handling (e.g., default values, exclusion, imputation).
+*   **Data Types:** Ensure consistency across all fields.
+*   **Duplicates:** Identify and remove duplicate supplier records or transaction entries.
+*   **Referential Integrity:** Enforce foreign key constraints between fact and dimension tables.
+*   **Outliers:** Identify and investigate extreme values that might skew averages (e.g., exceptionally high spend, incorrect delivery dates).
+*   **Business Rule Checks:** e.g., `Actual_Delivery_Date` cannot be before `Order_Date`.
+
+---
+
+### II. Refresh Frequency
+
+**Objective:** Determine the optimal cadence for data updates, balancing data freshness requirements with processing overhead and source system impact.
+
+*   **General Principle:** Data related to operational transactions (Spend, Delivery, Quality) typically requires higher freshness, while strategic/assessment data (Risk) can be less frequent.
+
+*   **Recommended Cadence:**
+
+    *   **Daily Refresh (Batch Processing):**
+        *   **Measures:** Purchase Spend, On-Time Delivery Percentage, Quality Rating.
+        *   **Dimensions:** Any new Suppliers added, updates to existing Supplier details.
+        *   **Reasoning:** These metrics are dynamic and reflect daily operational activities. Daily updates allow for timely identification of issues or trends. Run during off-peak hours (e.g., overnight).
+
+    *   **Weekly/Bi-Weekly Refresh (Batch Processing):**
+        *   **Measures:** Total Suppliers, High/Medium/Low Risk Suppliers, Average Supplier Risk Score.
+        *   **Reasoning:** Supplier risk assessments are typically not conducted daily. Weekly or bi-weekly updates provide sufficient freshness for monitoring risk profiles without excessive processing. New suppliers are also not added every day.
+
+    *   **Ad-hoc / Event-Driven:**
+        *   If a critical supplier risk assessment is updated out-of-cycle, an ad-hoc refresh of the risk data could be triggered.
+
+*   **Considerations:**
+    *   **Source System Capabilities:** Can source systems handle the extraction frequency without performance degradation?
+    *   **Data Volume:** How much data needs to be processed with each refresh? Incremental loads are highly recommended over full loads.
+    *   **User Expectations:** What level of data freshness do stakeholders expect for critical decisions?
+    *   **ETL/ELT Job Duration:** Ensure the refresh window is sufficient for all data processing tasks.
+
+---
+
+### III. Technical Considerations
+
+**Objective:** Outline the technical architecture, tools, and best practices for robust dashboard implementation.
+
+**1. Data Platform:**
+
+*   **Data Warehouse (DW):** Essential for storing transformed, structured, and query-optimized data.
+    *   **Options:** Snowflake, Google BigQuery, Amazon Redshift, Azure Synapse Analytics, PostgreSQL, SQL Server.
+    *   **Rationale:** Provides columnar storage, optimized for analytical queries, and supports complex joins and aggregations.
+*   **Data Lake:** For raw data ingestion and staging before transformation.
+    *   **Options:** AWS S3, Azure Data Lake Storage, Google Cloud Storage.
+
+**2. ETL/ELT Tooling:**
+
+*   **Orchestration:** Apache Airflow, Azure Data Factory, AWS Glue, Google Cloud Dataflow.
+*   **Transformation:** DBT (Data Build Tool) for SQL-based transformations, Python with Pandas/PySpark for complex logic, custom scripts.
+*   **Connectors:** Ensure robust connectors to all identified source systems.
+
+**3. Dashboarding/BI Tool:**
+
+*   **Options:** Tableau, Power BI, Looker, Qlik Sense, Apache Superset, Grafana.
+*   **Selection Criteria:** User experience, data connectivity, visualization capabilities, scalability, cost, integration with existing tech stack.
+
+**4. Performance Optimization:**
+
+*   **Database Level:**
+    *   **Indexing:** Create appropriate indexes on foreign keys, date columns, and frequently filtered dimensions (e.g., `Business_Unit_Key`, `Supplier_Key`, `Date_Key`).
+    *   **Partitioning:** Partition large fact tables by date (e.g., by year or month) to improve query performance.
+    *   **Materialized Views:** For complex, frequently accessed aggregations (e.g., pre-aggregated daily/weekly spend by supplier).
+    *   **Caching:** Leverage DW caching mechanisms.
+*   **Dashboard Level:**
+    *   **Minimize Custom Calculations:** Push complex calculations to the DW layer.
+    *   **Efficient Filters:** Use relevant and indexed filters.
+    *   **Data Source Optimization:** Use direct query only when necessary; prefer imported/extracted data for faster performance if freshness allows.
+    *   **Limit Visuals:** Avoid overwhelming the dashboard with too many visuals that might trigger excessive queries.
+
+**5. Scalability:**
+
+*   **Cloud-Native Services:** Leverage cloud-based DW and ETL services that offer elastic scalability to handle growing data volumes and user concurrency.
+*   **Modular Architecture:** Design ETL pipelines and data models to be modular, allowing independent scaling of components.
+
+**6. Data Governance &amp; Security:**
+
+*   **Access Control:** Implement Role-Based Access Control (RBAC) for the dashboard and underlying data warehouse.
+    *   Define roles (e.g., &quot;Procurement Manager,&quot; &quot;Business Unit Lead,&quot; &quot;Admin&quot;) with specific data visibility.
+*   **Data Masking/Anonymization:** If any sensitive supplier contact or financial details are involved beyond aggregated spend, ensure appropriate masking.
+*   **Encryption:** Data at rest (DW storage) and data in transit (between dashboard and DW, between ETL and DW) should be encrypted.
+*   **Auditing:** Log data access and changes for compliance and security monitoring.
+*   **Data Dictionary/Glossary:** Maintain clear definitions for all measures and dimensions to ensure consistent understanding.
+
+**7. Monitoring &amp; Alerting:**
+
+*   **ETL/ELT Monitoring:** Set up alerts for job failures, long-running jobs, or data quality anomalies.
+*   **Dashboard Performance Monitoring:** Track query response times and dashboard load times.
+*   **Data Quality Alerts:** Implement checks for unexpected data ranges, null values in critical fields, or significant deviations from historical trends.
+
+**8. Version Control:**
+
+*   Manage all ETL/ELT code, data model definitions (e.g., DBT models), and dashboard definitions (if supported by the BI tool) in a version control system (e.g., Git).
+
+**9. Deployment Strategy:**
+
+*   Establish clear Dev, Test, and Production environments for the entire data pipeline and dashboard.
+*   Implement automated deployment pipelines (CI/CD) for changes.
+
+---</p>
+            </div>
+        </div>
+        
+            
+            
+        <div class="section">
+            <h2>Risks &amp; Assumptions</h2>
+            <div class="content">
+                <p>Risk assessment to be completed in the planning phase.</p>
+            </div>
+        </div>
+        
+        </div>
+        
+        <div class="footer">
+            <p>Report Generated: 2026-06-29 14:41:22</p>
+            <p>Run ID: c09bef32-9b42-482d-a8d7-885767108fd5</p>
+        </div>
+    </div>
+</body>
+</html>
+        

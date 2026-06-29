@@ -18,7 +18,7 @@ class RequirementAgent:
     def __init__(self):
         """Initialize the requirement agent with LLM and tracing."""
         self.llm = get_llm()
-        self.trace = AgentTrace("RequirementAgent")
+        self.trace = AgentTrace()
 
     def _get_system_prompt(self) -> str:
         """Return the system prompt for the requirement analyst."""
@@ -31,7 +31,7 @@ When analyzing a business requirement, you MUST extract and structure the follow
 1. **business_objective**: The primary goal or objective the requirement aims to achieve
 2. **problem_statement**: The specific problem or gap being addressed
 3. **target_users**: Identified user personas or roles who will use the report/dashboard
-4. **kpis**: Key Performance Indicators that need to be tracked
+4. **kpis**: Return as an array of objects with name, target, and description for each KPI. Example: "kpis":[{"name":"Total Suppliers", "target":"1000", "description":"Total number of suppliers in the system"},{"name":"On-Time Delivery Rate", "target":"95%", "description":"Percentage of deliveries made on time"}]
 5. **measures**: Quantitative metrics to be calculated or tracked
 6. **dimensions**: Qualitative attributes for grouping/filtering (e.g., time, geography, department)
 7. **filters**: Specific filters or slicers required for user interaction
@@ -53,7 +53,63 @@ IMPORTANT:
 - Provide clear, actionable, and business-focused descriptions
 - Flag any ambiguities or missing information for clarification
 
-Return ONLY a valid JSON object with the above fields. No additional text or formatting."""
+Return ONLY a valid JSON object that EXACTLY mathces the following structure:
+
+{
+    "business_objective": "",
+    "problem_statement": "",
+    "target_users": [],
+    "kpis": [
+        {
+            "name": "",
+            "target": "",
+            "description": ""
+        }
+    ],
+    "measures": [],
+    "dimensions": [],
+    "filters": [],
+    "expected_visuals": [],
+    "drill_down_expectations": [],
+    "assumptions": [],
+    "dependencies": [],
+    "missing_information": [],
+    "ambiguity_list": [],
+    "risks": [],
+    "acceptance_criteria": []
+}
+
+Rules:
+Return ONLY valid JSON.
+Do not include markdown.
+Do not include explainations.
+KPIs MUST be an array of JSON objects with name, target, and description.
+Every KPI object must contain "name", "target", and "description".
+If information is unavailable, return an empty array[] as appropriate.
+
+IMPORTANT
+
+- The response MUST strictly follow the JSON structure.
+- Do NOT return arrays of strings for KPIs.
+- KPIs must aleays be objects with name, target, and description.
+- Return valid JSON only
+
+
+"""
+
+    def analyze(self, business_requirement: str, business_context: str = "") -> dict:
+        """
+        Public method to analyze a business requirement.
+        
+        Args:
+            business_requirement: The raw business requirement in natural language
+            business_context: Optional additional context about the business environment
+            
+        Returns:
+            Dictionary containing structured requirement analysis as JSON
+        """
+        return self.analyze_requirement(business_requirement, business_context)
+
 
     def analyze_requirement(
         self,
@@ -93,13 +149,18 @@ Business Requirement:
             })
 
             # Create messages for the LLM
-            messages = [HumanMessage(content=user_message)]
+            messages = [
+                HumanMessage(
+                    content=f"""
+                    {self._get_system_prompt()}
+                    {user_message}
+                    """
+                    )
+                ]
+
 
             # Call the LLM with system prompt
-            response = self.llm.invoke(
-                messages,
-                system=self._get_system_prompt()
-            )
+            response = self.llm.invoke(messages)
 
             # Extract the response content
             response_text = response.content.strip()
@@ -108,6 +169,17 @@ Business Requirement:
             # Parse JSON response
             try:
                 result = json.loads(response_text)
+
+                print("===============================================================")
+                print(result["kpis"])
+                print(type(result["kpis"]))
+
+                for k in result["kpis"]:
+                    print(k)
+                    print(type(k))
+                
+                print("=============================================================== ")
+
             except json.JSONDecodeError as e:
                 logger.error(f"Failed to parse LLM response as JSON: {e}")
                 # Try to extract JSON from the response if it contains extra text
@@ -152,26 +224,27 @@ Business Requirement:
             )
             raise
 
+
     def get_trace_data(self) -> dict:
         """Get the trace data for this operation."""
         return self.trace.get_data()
 
 
-# Export function for orchestrator integration
-def analyze_business_requirement(
-    business_requirement: str,
-    business_context: str = ""
-) -> dict:
-    """
-    Standalone function to analyze a business requirement.
-    This is the entry point for the orchestrator.
-    
-    Args:
-        business_requirement: The raw business requirement
-        business_context: Optional business context
+    # Export function for orchestrator integration
+    def analyze_business_requirement(
+        business_requirement: str,
+        business_context: str = ""
+    ) -> dict:
+        """
+        Standalone function to analyze a business requirement.
+        This is the entry point for the orchestrator.
         
-    Returns:
-        Structured requirement analysis as JSON dictionary
-    """
-    agent = RequirementAgent()
-    return agent.analyze_requirement(business_requirement, business_context)
+        Args:
+            business_requirement: The raw business requirement
+            business_context: Optional business context
+            
+        Returns:
+            Structured requirement analysis as JSON dictionary
+        """
+        agent = RequirementAgent()
+        return agent.analyze_requirement(business_requirement, business_context)

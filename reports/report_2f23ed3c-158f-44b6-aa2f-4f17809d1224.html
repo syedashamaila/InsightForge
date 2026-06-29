@@ -1,0 +1,469 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BI Report - 2f23ed3c-158f-44b6-aa2f-4f17809d1224</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }
+        
+        .section h3 {
+            color: #764ba2;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+        
+        .section p {
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        
+        .section ul {
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .section li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .card-title {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .footer {
+            background: #f0f0f0;
+            padding: 20px 30px;
+            text-align: center;
+            border-top: 1px solid #ddd;
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            .header h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Business Intelligence Report</h1>
+            <p>Run ID: 2f23ed3c-158f-44b6-aa2f-4f17809d1224</p>
+        </div>
+        
+        <div class="content">
+            
+        <div class="section">
+            <h2>Executive Summary</h2>
+            <div class="content">
+                <p>This BI analysis provides a comprehensive overview of our supplier ecosystem, integrating key metrics across supplier risk, operational performance, and financial impact. A core focus is on understanding the composition of our supplier base by risk classification (High, Medium, Low) and tracking the Average Supplier Risk Score. This allows for proactive identification and mitigation of potential supply chain disruptions, quality issues, and financial exposure, enabling more informed decision-making in supplier selection and management.
+
+Beyond risk, the dashboard illuminates critical aspects of supplier performance. Metrics such as On-Time Delivery Percentage and Quality Rating provide direct insights into the reliability and effectiveness of our supplier network, crucial for maintaining operational efficiency and product standards. Coupled with Purchase Spend, this analysis enables a holistic evaluation of supplier value, allowing procurement teams to optimize sourcing strategies and manage costs effectively. The ability to drill down by Business Unit, individual Supplier, and over Time further empowers targeted interventions and strategic planning to enhance overall supply chain resilience and performance.</p>
+            </div>
+        </div>
+        
+            
+            
+        <div class="section">
+            <h2>Business Goal</h2>
+            <div class="content">
+                <p>Not specified</p>
+            </div>
+        </div>
+        
+            
+            <div class="section">
+                <h2>Requirements</h2>
+                <div class="grid">
+                    <div class="card">
+                        <div class="card-title">Key Performance Indicators</div>
+                        <ul>
+                            <li>Total Suppliers</li><li>High Risk Suppliers</li><li>Medium Risk Suppliers</li><li>Low Risk Suppliers</li><li>Average Supplier Risk Score</li><li>On-Time Delivery Percentage</li><li>Quality Rating</li><li>Purchase Spend</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Measures</div>
+                        <ul>
+                            <li>Total Suppliers (Count)</li><li>High Risk Suppliers (Count)</li><li>Medium Risk Suppliers (Count)</li><li>Low Risk Suppliers (Count)</li><li>Supplier Risk Score (Individual/Average)</li><li>On-Time Deliveries (Count)</li><li>Total Deliveries (Count)</li><li>Quality Rating (Score/Percentage)</li><li>Purchase Amount (Sum)</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Dimensions</div>
+                        <ul>
+                            <li>Business Unit</li><li>Supplier</li><li>Supplier Risk Classification (High, Medium, Low)</li><li>Time (e.g., Year, Quarter, Month, Week)</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Filters</div>
+                        <ul>
+                            <li>Business Unit</li><li>Supplier Risk Classification (High, Medium, Low)</li><li>Supplier Name</li><li>Time Period (e.g., Year, Quarter, Month, Custom Date Range)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            
+        <div class="section">
+            <h2>Clarifications</h2>
+            <div class="content">
+                <p>No clarifications recorded.</p>
+            </div>
+        </div>
+        
+            
+            <div class="section">
+                <h2>Dashboard Prototype</h2>
+                <h3>Dashboard</h3>
+                <p></p>
+                <h3>Recommended Visualizations</h3>
+                <ul>
+                    <li>No visualizations planned</li>
+                </ul>
+                
+            </div>
+            
+            
+        <div class="section">
+            <h2>Recommendations</h2>
+            <div class="content">
+                <p>Given the lack of a specified business goal and the absence of actual data or visualizations, the recommendations will focus on foundational steps and strategic approaches to leverage the provided KPIs effectively.
+
+Here are 3-5 specific recommendations for implementation:
+
+1.  **Define and Socialize a Clear Business Goal:** Before proceeding with further analysis or action, convene key stakeholders (e.g., Procurement, Operations, Finance) to explicitly define the primary business goal(s) this BI analysis is intended to support. Examples could include &quot;Reduce overall supply chain risk by X%,&quot; &quot;Improve supplier performance (on-time delivery &amp; quality) by Y%,&quot; or &quot;Optimize procurement spend by Z% while maintaining quality.&quot; This foundational step is critical for setting targets, prioritizing insights, and ensuring all subsequent recommendations align with strategic objectives.
+
+2.  **Implement a Targeted High-Risk Supplier Mitigation Program:** Utilize the `High Risk Suppliers` and `Average Supplier Risk Score` KPIs to identify and prioritize critical suppliers. For each identified high-risk supplier, initiate a deeper dive to understand the specific nature of their risk (e.g., financial instability, geopolitical exposure, single-source dependency, quality issues). Develop and implement tailored mitigation strategies, which could include diversifying supply, enhancing contract terms, implementing performance improvement plans, or exploring alternative suppliers. Establish a regular review cycle (e.g., quarterly) to monitor the effectiveness of these strategies and re-evaluate supplier risk scores.
+
+3.  **Establish a Supplier Performance Management (SPM) Framework:** Integrate the `On-Time Delivery Percentage`, `Quality Rating`, and `Purchase Spend` KPIs into a comprehensive SPM framework. This involves:
+    *   **Setting clear performance thresholds and targets** for delivery and quality for different supplier categories.
+    *   **Conducting regular performance reviews** with key suppliers, using the BI data as a basis for discussion and identifying areas for improvement.
+    *   **Linking performance to procurement decisions**, such as contract renewals, volume allocation, or the development of preferred supplier lists. The `Purchase Spend` KPI will help prioritize which suppliers&#39; performance has the greatest financial impact.
+
+4.  **Enhance BI Granularity for Actionable Insights:** While the current KPIs provide aggregate views, true implementation requires drill-down capabilities. Develop the BI platform to allow for detailed segmentation and analysis of all KPIs. This means being able to break down:
+    *   `Purchase Spend` by supplier category, product/service, business unit, and geography.
+    *   `Supplier Risk Scores` by specific risk factors, category, and region.
+    *   `On-Time Delivery Percentage` and `Quality Rating` by specific product lines, delivery routes, or service types.
+    This enhanced granularity will enable the identification of specific root causes for issues and pinpoint precise opportunities for improvement or cost savings.</p>
+            </div>
+        </div>
+        
+            
+            
+        <div class="section">
+            <h2>Implementation Notes</h2>
+            <div class="content">
+                <p>Here are the implementation notes for building a Supplier Performance &amp; Risk Dashboard, structured for clarity and actionability.
+
+---
+
+## Implementation Notes: Supplier Performance &amp; Risk Dashboard
+
+**Dashboard Objective:** To provide a comprehensive view of supplier performance, quality, and risk levels, enabling proactive management and strategic decision-making.
+
+---
+
+### I. Data Sources &amp; Integration
+
+1.  **Identify Core Systems:**
+    *   **ERP/Procurement System (e.g., SAP, Oracle, Dynamics 365, Ariba):**
+        *   Supplier Master Data (Supplier ID, Name, Business Unit, Contact Info).
+        *   Purchase Orders (PO ID, Order Date, Supplier ID, Item Details, Quantity, Price, Amount).
+        *   Invoice Data (Invoice ID, Amount, Payment Status).
+    *   **Supply Chain Management (SCM) / Logistics System:**
+        *   Delivery Records (Delivery ID, PO ID, Supplier ID, Scheduled Delivery Date, Actual Delivery Date, Quantity Received).
+    *   **Quality Management System (QMS) / Inspection System:**
+        *   Quality Inspection Results (Delivery ID/PO ID, Item, Quality Score, Defect Count, Pass/Fail status).
+    *   **Vendor Management System (VMS) / Risk Assessment Tool:**
+        *   Supplier Risk Assessment Data (Supplier ID, Assessment Date, Risk Score, Risk Classification, Audit Results, Compliance Status).
+    *   **Internal Spreadsheets/Manual Inputs:**
+        *   Potentially for initial risk classifications, or ad-hoc supplier attributes not captured in core systems. (Aim to minimize this for long-term sustainability).
+
+2.  **Integration Methods:**
+    *   **ETL/ELT Tools:** Utilize tools like Talend, Informatica, Azure Data Factory, AWS Glue, Fivetran, Stitch, or custom scripts (Python with Pandas) to extract, transform, and load data into a central data warehouse or data lake.
+    *   **API Integrations:** For real-time or near real-time data from modern systems, leverage APIs.
+    *   **Direct Database Connections:** For on-premise systems, establish secure connections to extract data.
+    *   **Flat File Exports:** As a fallback, schedule automated CSV/Excel exports from source systems, though this is less robust.
+
+---
+
+### II. Data Model &amp; Transformation
+
+1.  **Core Entities (Staging &amp; Cleansing):**
+    *   **`stg_suppliers`:** Cleanse and deduplicate supplier master data.
+    *   **`stg_purchase_orders`:** Cleanse PO details, ensure correct linkages to suppliers.
+    *   **`stg_deliveries`:** Cleanse delivery records, calculate `On-Time Status` (Actual Delivery Date &lt;= Scheduled Delivery Date).
+    *   **`stg_quality_inspections`:** Cleanse quality data, potentially standardize quality ratings.
+    *   **`stg_risk_assessments`:** Cleanse risk scores and classifications.
+
+2.  **Dimensional Model (Star Schema recommended):**
+
+    *   **`dim_supplier`:**
+        *   `supplier_id` (PK)
+        *   `supplier_name`
+        *   `business_unit`
+        *   `current_risk_score` (from latest assessment)
+        *   `current_risk_classification` (High, Medium, Low - from latest assessment)
+        *   `supplier_status` (Active/Inactive)
+        *   *Attributes for other supplier demographics if relevant.*
+
+    *   **`dim_date`:**
+        *   `date_key` (PK)
+        *   `date`
+        *   `day_of_week`, `day_name`
+        *   `month`, `month_name`
+        *   `quarter`, `quarter_name`
+        *   `year`
+        *   `week_of_year`
+
+    *   **`fact_purchases`:** (Granularity: Purchase Order Line Item)
+        *   `purchase_id` (PK)
+        *   `supplier_id` (FK to `dim_supplier`)
+        *   `order_date_key` (FK to `dim_date`)
+        *   `purchase_amount` (Sum of line item amount)
+        *   `quantity_ordered`
+        *   `item_id`, `item_name`
+
+    *   **`fact_deliveries`:** (Granularity: Individual Delivery)
+        *   `delivery_id` (PK)
+        *   `supplier_id` (FK to `dim_supplier`)
+        *   `delivery_date_key` (FK to `dim_date`)
+        *   `scheduled_delivery_date_key` (FK to `dim_date`)
+        *   `is_on_time` (Boolean: TRUE if actual &lt;= scheduled)
+        *   `quality_rating_score` (e.g., 1-5, or 0-100)
+        *   `quality_pass_fail` (Boolean: TRUE if passed quality check)
+        *   `total_items_delivered`
+
+    *   **`fact_risk_history`:** (Optional, if historical risk changes are needed. Otherwise, `current_risk_score/classification` on `dim_supplier` is sufficient for current state.)
+        *   `risk_assessment_id` (PK)
+        *   `supplier_id` (FK to `dim_supplier`)
+        *   `assessment_date_key` (FK to `dim_date`)
+        *   `risk_score`
+        *   `risk_classification` (High, Medium, Low)
+
+3.  **Measures Calculation Logic:**
+
+    *   **Total Suppliers:** `COUNT(DISTINCT supplier_id)` from `dim_supplier`.
+    *   **High/Medium/Low Risk Suppliers:** `COUNT(DISTINCT supplier_id)` from `dim_supplier` `WHERE current_risk_classification = &#39;High&#39;/&#39;Medium&#39;/&#39;Low&#39;`.
+    *   **Supplier Risk Score (Individual/Average):**
+        *   Individual: `current_risk_score` from `dim_supplier`.
+        *   Average: `AVG(current_risk_score)` from `dim_supplier` (filtered by dimensions).
+    *   **On-Time Deliveries:** `COUNT(delivery_id)` from `fact_deliveries` `WHERE is_on_time = TRUE`.
+    *   **Total Deliveries:** `COUNT(delivery_id)` from `fact_deliveries`.
+    *   **Quality Rating (Score/Percentage):**
+        *   Score: `AVG(quality_rating_score)` from `fact_deliveries`.
+        *   Percentage: `(COUNT(CASE WHEN quality_pass_fail = TRUE THEN delivery_id END) / COUNT(delivery_id)) * 100`. (Requires `quality_pass_fail` field).
+    *   **Purchase Amount:** `SUM(purchase_amount)` from `fact_purchases`.
+
+4.  **Dimensions &amp; Hierarchies:**
+
+    *   **Business Unit:** Directly available from `dim_supplier`.
+    *   **Supplier:** `dim_supplier` will serve as the primary dimension for drilling down to individual supplier performance.
+    *   **Supplier Risk Classification:** Derived during ETL, based on `current_risk_score` or direct input.
+        *   *Crucial Decision Point:* How is this classification determined?
+            *   **Rule-based:** e.g., Score &gt; 80 = Low, 50-80 = Medium, &lt; 50 = High.
+            *   **Manual Assignment:** Updated periodically by risk managers.
+            *   **ML Model Output:** If an advanced risk prediction model is in place.
+        *   Ensure a clear, consistent logic is applied in the ETL.
+    *   **Time (Year, Quarter, Month, Week):** Available from `dim_date`, link to `fact_purchases` (order_date_key) and `fact_deliveries` (delivery_date_key).
+
+5.  **Data Quality &amp; Validation:**
+    *   **Missing Values:** Implement imputation or flagging for missing `risk_score`, `delivery_dates`, `quality_ratings`.
+    *   **Duplicates:** Ensure unique `supplier_id`, `delivery_id`, `purchase_id`.
+    *   **Consistency:** Standardize `business_unit` names, `risk_classification` values.
+    *   **Referential Integrity:** Enforce foreign key constraints in the data warehouse.
+    *   **Business Rule Checks:** e.g., `purchase_amount` &gt; 0, `delivery_date` not in future.
+    *   **Reconciliation:** Periodically reconcile aggregated dashboard figures with source system reports for critical measures (e.g., total purchase amount).
+
+---
+
+### III. Dashboard Design &amp; Visualizations (Brief)
+
+*   **Overview Page:** KPI cards for Total Suppliers, High/Medium/Low Risk counts, Avg Risk Score, On-Time Delivery %, Quality Rating %, Total Purchase Amount.
+*   **Risk Analysis Page:** Bar chart for Risk Classification distribution, Scatter plot of Risk Score vs. Purchase Amount, Table of top/bottom suppliers by risk.
+*   **Performance Analysis Page:** Trend lines for On-Time Delivery %, Quality Rating % over time. Bar charts for performance by Business Unit. Detailed table for individual supplier performance.
+*   **Filters:** Global filters for Business Unit, Time Period (Year, Quarter, Month), Supplier Risk Classification, and individual Supplier Name.
+*   **Drill-down:** Enable drill-down from aggregated views to individual supplier details.
+
+---
+
+### IV. Refresh Frequency &amp; Strategy
+
+1.  **Risk Data:**
+    *   **Frequency:** **Daily or Weekly.** Risk scores and classifications typically don&#39;t change hourly. Daily refresh ensures the latest assessment is reflected.
+    *   **Strategy:** Incremental load for new assessments, update existing supplier&#39;s `current_risk_score` and `current_risk_classification` in `dim_supplier`.
+
+2.  **Operational Data (Deliveries, Purchases):**
+    *   **Frequency:** **Daily or Hourly.**
+        *   **Daily:** Sufficient for most strategic reporting.
+        *   **Hourly/Near Real-time:** If operational teams require very up-to-date delivery or purchase information for immediate action.
+    *   **Strategy:** Incremental load for new purchase orders and deliveries. Backfill historical data if needed.
+
+3.  **Overall Refresh Schedule:**
+    *   Schedule ETL/ELT jobs to run outside peak business hours (e.g., overnight) for daily refreshes.
+    *   For hourly refreshes, ensure robust error handling and monitoring.
+    *   Implement **incremental loading** where possible to reduce processing time and resource consumption. Full refreshes should only be used for initial load or major schema changes.
+    *   **Monitoring:** Set up alerts for ETL job failures or data quality issues.
+
+---
+
+### V. Technical Considerations
+
+1.  **Platform Choices:**
+    *   **BI Tool:** Tableau, Power BI, Qlik Sense, Looker, Domo. Choose based on organizational preference, licensing, and features.
+    *   **Data Warehouse/Lakehouse:** Snowflake, Databricks, Azure Synapse Analytics, AWS Redshift, Google BigQuery. Choose based on cloud strategy, scalability needs, and budget.
+    *   **ETL/ELT Orchestration:** Apache Airflow, Azure Data Factory, AWS Glue, dbt (Data Build Tool) for transformations.
+
+2.  **Performance Optimization:**
+    *   **Indexing:** Apply appropriate indexes on foreign keys and frequently filtered/joined columns in the data warehouse.
+    *   **Materialized Views/Aggregates:** Create pre-aggregated tables or materialized views for common summary metrics (e.g., daily totals by business unit) to speed up dashboard loading.
+    *   **Partitioning:** Partition large fact tables (e.g., `fact_purchases`, `fact_deliveries`) by date to improve query performance for time-based filters.
+    *   **Query Optimization:** Write efficient SQL queries for data transformations and dashboard visuals.
+    *   **Caching:** Utilize caching features of the chosen BI tool.
+
+3.  **Security &amp; Access Control:**
+    *   **Row-Level Security (RLS):** Implement RLS in the BI tool or data warehouse to restrict users to view data only for their assigned Business Units or suppliers.
+    *   **Column-Level Security (CLS):** Restrict access to sensitive columns (e.g., specific risk details, confidential financial data) to authorized users.
+    *   **Authentication &amp; Authorization:** Integrate with corporate identity management systems (e.g., Azure AD, Okta, LDAP).
+    *   **Data Encryption:** Ensure data is encrypted at rest (in the data warehouse) and in transit (between source systems, ETL, and BI tool).
+
+4.  **Scalability &amp; Maintenance:**
+    *   **Modular ETL:** Design ETL pipelines in modular components for easier debugging, maintenance, and scaling.
+    *   **Version Control:** Use Git for managing all ETL code, SQL scripts, and dashboard definitions.
+    *   **Documentation:** Maintain comprehensive documentation for data lineage, data dictionary, ETL logic, and dashboard definitions.
+    *   **Monitoring &amp; Alerting:** Set up monitoring for data pipeline health, data warehouse performance, and dashboard usage.
+
+5.  **Data Governance:**
+    *   **Data Ownership:** Clearly define data owners and stewards for each data domain (Supplier Master, Procurement, Quality, Risk).
+    *   **Data Dictionary:** Maintain a central data dictionary with definitions for all measures and dimensions used in the dashboard.
+    *   **Compliance:** Ensure compliance with relevant data privacy regulations (e.g., GDPR, CCPA) if supplier data contains personal information.
+    *   **Auditability:** Ensure changes to risk classifications or critical data points can be tracked and audited.
+
+---</p>
+            </div>
+        </div>
+        
+            
+            
+        <div class="section">
+            <h2>Risks &amp; Assumptions</h2>
+            <div class="content">
+                <p>The absence of a specified Business Goal is a significant risk in itself, as it makes it difficult to define success and measure the initiative&#39;s true value. However, based on the provided KPIs and Filters, here are potential risks and assumptions:
+
+## Potential Risks
+
+1.  **Lack of Alignment with Strategic Objectives (due to missing Business Goal):** Without a clear business goal, the BI initiative risks becoming a &quot;dashboard for dashboard&#39;s sake.&quot; It may produce interesting data, but without a specific objective (e.g., &quot;Reduce high-risk suppliers by 15%,&quot; &quot;Improve on-time delivery by 5%&quot;), the insights might not be actionable or contribute to core business strategies, leading to wasted effort and low ROI.
+2.  **Data Quality, Consistency, and Availability:**
+    *   **Supplier Risk Classification &amp; Score:** The accuracy and consistency of &quot;High/Medium/Low Risk Suppliers&quot; and &quot;Average Supplier Risk Score&quot; heavily depend on a robust, standardized, and consistently applied risk assessment methodology. Inconsistent manual inputs or varying classification criteria across business units could lead to unreliable data.
+    *   **On-Time Delivery &amp; Quality Rating:** Collecting accurate &quot;On-Time Delivery Percentage&quot; and &quot;Quality Rating&quot; across all suppliers and business units can be challenging. Data might be incomplete, recorded inconsistently, or reside in disparate systems (e.g., ERP, quality management, logistics systems), making integration and standardization difficult.
+3.  **Data Integration Challenges:** The various KPIs (Supplier Risk, Delivery, Quality, Spend) likely originate from multiple, potentially siloed source systems (e.g., SRM, ERP, quality management, finance). Integrating these disparate systems to create a unified, consistent, and timely view of the data can be complex, time-consuming, and resource-intensive, requiring significant technical expertise.
+4.  **Low User Adoption and Actionability:** Even with accurate data, if the BI solution is not intuitive, doesn&#39;t provide clear actionable insights, or if users don&#39;t trust the data, adoption will be low. Without a clear business goal guiding the dashboard&#39;s design, users might struggle to understand how to leverage the information to make decisions or drive improvements in supplier performance or risk management.
+
+## Assumptions
+
+1.  **Existence of Standardized Methodologies and Data:**
+    *   **Supplier Risk:** It is assumed that there is a defined, consistent, and regularly updated methodology for assessing and classifying supplier risk (High, Medium, Low) and calculating an &quot;Average Supplier Risk Score&quot; across the organization.
+    *   **Performance Data:** It is assumed that accurate and complete data for &quot;On-Time Delivery Percentage,&quot; &quot;Quality Rating,&quot; and &quot;Purchase Spend&quot; is consistently captured and available in source systems across all relevant business units and suppliers.
+2.  **Data Accessibility and System Integrability:** It is assumed that all necessary source systems containing the required KPI and filter data are accessible and can be integrated (e.g., via APIs, data warehouses, ETL processes) to extract, transform, and load the data into the BI platform in a timely and efficient manner.
+3.  **Clear Business Need and Stakeholder Engagement:** It is assumed that there is a recognized business need for these specific KPIs and filters, and that key stakeholders (e.g., procurement, risk management, operations) are engaged and committed to using the BI solution to monitor, analyze, and act upon the insights derived from the data.</p>
+            </div>
+        </div>
+        
+        </div>
+        
+        <div class="footer">
+            <p>Report Generated: 2026-06-29 13:27:19</p>
+            <p>Run ID: 2f23ed3c-158f-44b6-aa2f-4f17809d1224</p>
+        </div>
+    </div>
+</body>
+</html>
+        

@@ -43,25 +43,6 @@ class OrchestratorAgent:
     """
 
     def __init__(self) -> None:
-        
-        #debug : Delete later
-        print("1")
-        self.logger=self._setup_logger()
-
-        print("2")
-        self.agent_trace = AgentTrace()
-        print("3")
-        self.agent_factory = AgentFactory()
-        print("4")
-        self.requirement_agent: RequirementAgent = self.agent_factory.get_agent("RequirementAgent")
-        print("5")
-        self.clarification_agent: ClarificationAgent = self.agent_factory.get_agent("ClarificationAgent")
-        print("6")
-        self.prototype_agent: PrototypeAgent = self.agent_factory.get_agent("PrototypeAgent")   
-        print("7")
-        self.reporter_agent: ReporterAgent = self.agent_factory.get_agent("ReporterAgent")
-        print("8")
-
 
         """Initialize the OrchestratorAgent with logger, trace, and agents.
 
@@ -84,6 +65,7 @@ class OrchestratorAgent:
         self.reporter_agent: ReporterAgent = self.agent_factory.get_agent(
             "ReporterAgent"
         )
+        self.logger.info("OrchestratorAgent initialized with all agents")
 
     @staticmethod
     def _setup_logger() -> logging.Logger:
@@ -153,13 +135,13 @@ class OrchestratorAgent:
             )
 
             # Step 5: Execute ReporterAgent
-            report_path = self._execute_reporter_agent(
+            report_result = self._execute_reporter_agent(
                 run_id, requirement_result, clarification_result, prototype_result
             )
 
             # Step 6: Record pipeline completion
             execution_time = (datetime.utcnow() - start_time).total_seconds()
-            self.agent_trace.complete_pipeline(execution_time)
+            self.agent_trace.complete_pipeline(run_id, execution_time)
             self.logger.info("Pipeline Finished")
 
             return {
@@ -168,13 +150,14 @@ class OrchestratorAgent:
                 "requirement_result": requirement_result,
                 "clarification_result": clarification_result,
                 "prototype_result": prototype_result,
-                "report_path": report_path,
+                "report_result": report_result,
+                "report_path": report_result.get("report_path"),
                 "generated_at": datetime.utcnow().isoformat(),
             }
 
         except Exception as exc:
             self.logger.exception("Pipeline execution failed")
-            self.agent_trace.record_error(str(exc))
+            self.agent_trace.fail_trace("Pipeline", str(exc))
 
             return {
                 "run_id": run_id,
@@ -274,7 +257,7 @@ class OrchestratorAgent:
         requirement_result: Dict[str, Any],
         clarification_result: Dict[str, Any],
         prototype_result: Dict[str, Any],
-    ) -> str:
+    ) -> Dict[str, Any]:
         """Execute the ReporterAgent step.
 
         Args:
@@ -291,12 +274,13 @@ class OrchestratorAgent:
         """
         self.agent_trace.start_agent("ReporterAgent", run_id)
         try:
-            report_path = self.reporter_agent.generate_report(
+            report_result = self.reporter_agent.generate_report(
                 requirement_result, clarification_result, prototype_result, run_id
             )
             self.agent_trace.complete_agent("ReporterAgent")
             self.logger.info("Reporter Agent Completed")
-            return report_path
+            return report_result
+        
         except Exception as exc:
             self.agent_trace.complete_agent("ReporterAgent", error=str(exc))
             raise

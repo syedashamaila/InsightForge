@@ -36,6 +36,9 @@ class ClarificationAgent:
         """Initialize the clarification agent with shared LLM."""
         self.llm = get_llm()
     
+    def clarify(self, requirement_result):
+        return self.process(requirement_result)
+
     def process(self, requirement_json: dict | str) -> dict[str, Any]:
         """
         Process requirements through clarification analysis.

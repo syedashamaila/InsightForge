@@ -1,0 +1,423 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BI Report - 0224764b-6b8c-41ed-b2b1-1b0b1fa6b17e</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }
+        
+        .section h3 {
+            color: #764ba2;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+        
+        .section p {
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        
+        .section ul {
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .section li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .card-title {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .footer {
+            background: #f0f0f0;
+            padding: 20px 30px;
+            text-align: center;
+            border-top: 1px solid #ddd;
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            .header h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Business Intelligence Report</h1>
+            <p>Run ID: 0224764b-6b8c-41ed-b2b1-1b0b1fa6b17e</p>
+        </div>
+        
+        <div class="content">
+            
+        <div class="section">
+            <h2>Executive Summary</h2>
+            <div class="content">
+                <p>Executive summary generation pending. Please refer to the detailed sections below.</p>
+            </div>
+        </div>
+        
+            
+            
+        <div class="section">
+            <h2>Business Goal</h2>
+            <div class="content">
+                <p>Not specified</p>
+            </div>
+        </div>
+        
+            
+            <div class="section">
+                <h2>Requirements</h2>
+                <div class="grid">
+                    <div class="card">
+                        <div class="card-title">Key Performance Indicators</div>
+                        <ul>
+                            <li>{&#39;name&#39;: &#39;Total Suppliers&#39;, &#39;target&#39;: &#39;&#39;, &#39;description&#39;: &#39;The total number of active suppliers across all business units.&#39;}</li><li>{&#39;name&#39;: &#39;High Risk Suppliers&#39;, &#39;target&#39;: &#39;&#39;, &#39;description&#39;: &#39;The number of suppliers classified as high risk based on predefined business thresholds.&#39;}</li><li>{&#39;name&#39;: &#39;Medium Risk Suppliers&#39;, &#39;target&#39;: &#39;&#39;, &#39;description&#39;: &#39;The number of suppliers classified as medium risk based on predefined business thresholds.&#39;}</li><li>{&#39;name&#39;: &#39;Low Risk Suppliers&#39;, &#39;target&#39;: &#39;&#39;, &#39;description&#39;: &#39;The number of suppliers classified as low risk based on predefined business thresholds.&#39;}</li><li>{&#39;name&#39;: &#39;Average Supplier Risk Score&#39;, &#39;target&#39;: &#39;&#39;, &#39;description&#39;: &#39;The calculated average risk score across all monitored suppliers.&#39;}</li><li>{&#39;name&#39;: &#39;On-Time Delivery Percentage&#39;, &#39;target&#39;: &#39;&#39;, &#39;description&#39;: &#39;The percentage of deliveries made by suppliers that meet the agreed-upon delivery schedule.&#39;}</li><li>{&#39;name&#39;: &#39;Quality Rating&#39;, &#39;target&#39;: &#39;&#39;, &#39;description&#39;: &#39;An aggregated score or rating representing the quality performance of suppliers.&#39;}</li><li>{&#39;name&#39;: &#39;Purchase Spend&#39;, &#39;target&#39;: &#39;&#39;, &#39;description&#39;: &#39;The total monetary value of purchases made from all suppliers.&#39;}</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Measures</div>
+                        <ul>
+                            <li>Count of Total Suppliers</li><li>Count of High Risk Suppliers</li><li>Count of Medium Risk Suppliers</li><li>Count of Low Risk Suppliers</li><li>Average of Supplier Risk Score</li><li>Percentage of On-Time Deliveries</li><li>Average or Score of Quality Rating</li><li>Sum of Purchase Spend</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Dimensions</div>
+                        <ul>
+                            <li>Business Unit</li><li>Supplier</li><li>Supplier Risk Classification (High, Medium, Low)</li><li>Time (e.g., Year, Quarter, Month)</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">Filters</div>
+                        <ul>
+                            <li>Business Unit</li><li>Supplier Risk Classification (High, Medium, Low)</li><li>Supplier Name</li><li>Time Period</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            
+        <div class="section">
+            <h2>Clarifications</h2>
+            <div class="content">
+                <p>No clarifications recorded.</p>
+            </div>
+        </div>
+        
+            
+            <div class="section">
+                <h2>Dashboard Prototype</h2>
+                <h3>Dashboard</h3>
+                <p></p>
+                <h3>Recommended Visualizations</h3>
+                <ul>
+                    <li>No visualizations planned</li>
+                </ul>
+                
+            </div>
+            
+            
+        <div class="section">
+            <h2>Recommendations</h2>
+            <div class="content">
+                <p>Recommendations will be finalized during implementation.</p>
+            </div>
+        </div>
+        
+            
+            
+        <div class="section">
+            <h2>Implementation Notes</h2>
+            <div class="content">
+                <p>Here are the implementation notes for building the described dashboard, structured for clarity and completeness.
+
+---
+
+## Dashboard Implementation Notes: Supplier Performance &amp; Risk
+
+**Dashboard Name:** Supplier Performance &amp; Risk Overview
+**Purpose:** Provide a comprehensive view of supplier performance, risk profiles, and purchasing trends to aid strategic decision-making and operational management.
+
+---
+
+### 1. Data Sources &amp; Preparation
+
+**1.1. Identified Data Sources:**
+
+*   **ERP/Procurement System:**
+    *   Purchase Orders (Order ID, Supplier ID, Purchase Date, Expected Delivery Date, Actual Delivery Date, Spend Amount, Item Details).
+    *   Supplier Master Data (Supplier ID, Supplier Name, Business Unit, Contact Info).
+*   **Supplier Risk Management System (or manual assessments):**
+    *   Supplier Risk Scores (Supplier ID, Risk Score, Assessment Date).
+    *   Supplier Risk Classification (Supplier ID, Classification - High, Medium, Low).
+*   **Quality Management System (or manual ratings):**
+    *   Supplier Quality Ratings (Supplier ID, Rating Score, Rating Date, Feedback).
+
+**1.2. Data Model (Recommended: Star Schema)**
+
+*   **Fact Table:** `Fact_Purchases`
+    *   `Purchase_Key` (Primary Key)
+    *   `Supplier_Key` (Foreign Key to `Dim_Suppliers`)
+    *   `Order_Date_Key` (Foreign Key to `Dim_Time`)
+    *   `Delivery_Date_Key` (Foreign Key to `Dim_Time`)
+    *   `Purchase_Spend` (Measure)
+    *   `On_Time_Delivery_Flag` (Derived Measure: 1 for on-time, 0 for late)
+*   **Dimension Tables:**
+    *   `Dim_Suppliers`
+        *   `Supplier_Key` (Primary Key)
+        *   `Supplier_ID` (Natural Key)
+        *   `Supplier_Name`
+        *   `Business_Unit`
+        *   `Current_Risk_Score` (SCD Type 1 or 2 if historical risk is needed)
+        *   `Current_Risk_Classification` (SCD Type 1 or 2)
+        *   `Current_Quality_Rating` (SCD Type 1 or 2)
+    *   `Dim_Time`
+        *   `Date_Key` (Primary Key, e.g., YYYYMMDD integer)
+        *   `Full_Date`
+        *   `Year`
+        *   `Quarter`
+        *   `Month`
+        *   `Month_Name`
+        *   `Day_of_Week`
+
+**1.3. ETL/ELT Process Steps:**
+
+1.  **Extraction:**
+    *   Connect to ERP, Risk, and Quality systems via APIs, database connectors, or flat file exports.
+    *   Extract raw data for purchases, supplier master, risk assessments, and quality ratings.
+2.  **Transformation:**
+    *   **Data Cleaning:**
+        *   Handle missing values (e.g., default `0` for scores if truly absent, or exclude records).
+        *   Remove duplicate supplier entries.
+        *   Standardize supplier names, business unit names, and date formats.
+        *   Ensure data types are correct (e.g., dates are date objects, spend is numeric).
+    *   **Data Harmonization:**
+        *   Map different supplier identifiers from various systems to a single `Supplier_ID` if necessary.
+    *   **Derivations:**
+        *   **`On_Time_Delivery_Flag`:** Calculate `IF(Actual_Delivery_Date &lt;= Expected_Delivery_Date, 1, 0)`. Handle cases where `Actual_Delivery_Date` is NULL (e.g., order not yet delivered or considered late if past `Expected_Delivery_Date`).
+        *   **`Supplier_Risk_Classification`:** If only a raw score is available, define thresholds to classify:
+            *   `IF(Risk_Score &gt;= 80, &#39;High&#39;, IF(Risk_Score &gt;= 50, &#39;Medium&#39;, &#39;Low&#39;))` (Adjust thresholds based on business rules).
+        *   **`Dim_Time` Population:** Generate or extract date attributes (Year, Quarter, Month) from `Purchase_Date` and `Delivery_Date`.
+    *   **Data Loading:**
+        *   Load transformed data into a data warehouse (e.g., Snowflake, Redshift, Azure Synapse, SQL Server DW).
+        *   Implement Slowly Changing Dimension (SCD) Type 1 or 2 for `Dim_Suppliers` if historical changes in risk classification or quality rating need to be tracked. For a simple &quot;current state&quot; dashboard, Type 1 (overwrite) is often sufficient.
+        *   Load `Fact_Purchases` incrementally to append new purchase records.
+
+---
+
+### 2. Measures Calculation Logic
+
+All measures will be calculated within the BI tool or pre-aggregated in the data warehouse.
+
+*   **Count of Total Suppliers:**
+    *   `COUNT(DISTINCT Dim_Suppliers.Supplier_ID)`
+*   **Count of High Risk Suppliers:**
+    *   `COUNT(DISTINCT Dim_Suppliers.Supplier_ID) WHERE Dim_Suppliers.Current_Risk_Classification = &#39;High&#39;`
+*   **Count of Medium Risk Suppliers:**
+    *   `COUNT(DISTINCT Dim_Suppliers.Supplier_ID) WHERE Dim_Suppliers.Current_Risk_Classification = &#39;Medium&#39;`
+*   **Count of Low Risk Suppliers:**
+    *   `COUNT(DISTINCT Dim_Suppliers.Supplier_ID) WHERE Dim_Suppliers.Current_Risk_Classification = &#39;Low&#39;`
+*   **Average of Supplier Risk Score:**
+    *   `AVG(Dim_Suppliers.Current_Risk_Score)`
+*   **Percentage of On-Time Deliveries:**
+    *   `SUM(Fact_Purchases.On_Time_Delivery_Flag) / COUNT(Fact_Purchases.Purchase_Key)`
+    *   *Note:* Ensure `COUNT` only includes relevant purchases (e.g., delivered orders).
+*   **Average or Score of Quality Rating:**
+    *   `AVG(Dim_Suppliers.Current_Quality_Rating)`
+*   **Sum of Purchase Spend:**
+    *   `SUM(Fact_Purchases.Purchase_Spend)`
+
+---
+
+### 3. Dimensions &amp; Filtering
+
+*   **Business Unit:**
+    *   Source: `Dim_Suppliers.Business_Unit`
+    *   Usage: Filter, Grouping, Drill-down
+*   **Supplier:**
+    *   Source: `Dim_Suppliers.Supplier_Name`
+    *   Usage: Filter, Detail tables, Drill-down
+*   **Supplier Risk Classification (High, Medium, Low):**
+    *   Source: `Dim_Suppliers.Current_Risk_Classification`
+    *   Usage: Filter, Grouping, Color coding
+*   **Time (e.g., Year, Quarter, Month):**
+    *   Source: `Dim_Time.Year`, `Dim_Time.Quarter`, `Dim_Time.Month` (linked via `Order_Date_Key` or `Delivery_Date_Key` to `Fact_Purchases`)
+    *   Usage: Filter, Trend analysis, Drill-down hierarchies
+
+---
+
+### 4. Refresh Frequency
+
+*   **Recommendation:** **Daily, overnight.**
+*   **Justification:**
+    *   **Purchase Spend &amp; On-Time Deliveries:** These metrics can change daily as new orders are placed and deliveries occur. A daily refresh provides up-to-date operational insights.
+    *   **Supplier Risk/Quality:** While these might not change daily, including them in the daily refresh ensures consistency across all metrics and captures any updates promptly.
+    *   An overnight refresh minimizes impact on source systems and user access during peak business hours.
+*   **Considerations for Alternatives:**
+    *   **Weekly:** Acceptable if the decision-making cycle is longer and daily granularity isn&#39;t critical.
+    *   **Hourly/Real-time:** Generally overkill for this type of dashboard unless very high-volume, time-sensitive transactions are involved and immediate operational adjustments are required based on these specific metrics. Requires more robust infrastructure and careful optimization.
+
+---
+
+### 5. Technical Considerations
+
+**5.1. Data Integration &amp; Storage:**
+
+*   **ETL/ELT Tool:** Choose a robust tool for data extraction, transformation, and loading. Examples:
+    *   Cloud-native: AWS Glue, Azure Data Factory, Google Cloud Dataflow.
+    *   On-prem/Hybrid: Talend, Informatica, Apache NiFi.
+    *   Managed ELT: Fivetran, Stitch.
+*   **Data Warehouse:** A cloud-based data warehouse (e.g., Snowflake, Amazon Redshift, Google BigQuery, Azure Synapse Analytics) is highly recommended for scalability, performance, and cost-effectiveness. A traditional SQL Server or PostgreSQL data warehouse can also be used.
+
+**5.2. Business Intelligence (BI) Tool:**
+
+*   Select a BI tool capable of connecting to your data warehouse, handling complex calculations, and providing interactive visualizations. Examples:
+    *   Tableau
+    *   Microsoft Power BI
+    *   Looker
+    *   Qlik Sense
+    *   ThoughtSpot
+
+**5.3. Performance Optimization:**
+
+*   **Indexing:** Ensure proper indexing on foreign keys in the fact table and frequently filtered columns in dimension tables (e.g., `Supplier_ID`, `Business_Unit`, `Date_Key`, `Risk_Classification`).
+*   **Materialized Views:** For complex or frequently accessed aggregations (e.g., pre-calculated monthly spend totals), consider creating materialized views in the data warehouse.
+*   **Query Optimization:** Design efficient SQL queries within the ETL process and ensure the BI tool generates optimized queries.
+*   **Dashboard Design:** Avoid excessive visuals on a single page, optimize chart types, and use filters effectively to reduce data loaded.
+
+**5.4. Security:**
+
+*   **Data Access Control:** Implement strict access controls at the data warehouse level (e.g., role-based access control - RBAC) to ensure only authorized users and services can access the raw data.
+*   **Row-Level Security (RLS):** If different users/business units should only see data relevant to them (e.g., a Business Unit manager only sees their suppliers), implement RLS within the BI tool or at the data warehouse layer.
+*   **Authentication &amp; Authorization:** Secure access to the BI dashboard itself using corporate identity providers (e.g., SSO with Azure AD, Okta).
+*   **Data Encryption:** Ensure data is encrypted at rest in the data warehouse and in transit between systems.
+
+**5.5. Scalability &amp; Maintainability:**
+
+*   **Modular ETL:** Design ETL jobs in a modular fashion for easier debugging and maintenance.
+*   **Version Control:** Use version control (e.g., Git) for all ETL scripts, data model definitions, and dashboard configurations.
+*   **Monitoring &amp; Alerting:** Set up monitoring for ETL job failures, data quality anomalies, and dashboard performance issues.
+*   **Documentation:** Maintain comprehensive documentation for data sources, ETL logic, data model, measure definitions, and dashboard usage.
+*   **Data Governance:** Establish clear data ownership, data quality standards, and a data dictionary.
+
+**5.6. Data Quality Checks:**
+
+*   Implement automated data quality checks during the ETL process (e.g., check for null `Supplier_ID`, `Purchase_Spend` &gt; 0, valid date ranges, consistency of risk classifications).
+*   Alert stakeholders to any data quality issues detected.
+
+---</p>
+            </div>
+        </div>
+        
+            
+            
+        <div class="section">
+            <h2>Risks &amp; Assumptions</h2>
+            <div class="content">
+                <p>Risk assessment to be completed in the planning phase.</p>
+            </div>
+        </div>
+        
+        </div>
+        
+        <div class="footer">
+            <p>Report Generated: 2026-06-29 14:53:15</p>
+            <p>Run ID: 0224764b-6b8c-41ed-b2b1-1b0b1fa6b17e</p>
+        </div>
+    </div>
+</body>
+</html>
+        

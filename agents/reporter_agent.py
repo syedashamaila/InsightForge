@@ -74,8 +74,9 @@ class ReporterAgent:
         """
         try:
             self.logger.info(f"Report generation started for run_id: {run_id}")
-            self.trace = AgentTrace(agent_name="ReporterAgent", run_id=run_id)
-            self.trace.log_start()
+            self.trace = AgentTrace()
+            self.trace.start_agent("ReporterAgent", run_id)
+            #self.trace.log_start()
             self.trace.log_input({
                 "requirement_result": bool(requirement_result),
                 "clarification_result": bool(clarification_result),
@@ -85,38 +86,38 @@ class ReporterAgent:
             
             # Validate inputs
             self._validate_inputs(requirement_result, clarification_result, prototype_result, run_id)
-            self.trace.log_step("inputs_validated")
+            #self.trace.log_step("inputs_validated")
             
             # Summarize sections
             requirement_summary = self._summarize_requirements(requirement_result)
-            self.trace.log_step("requirement_summarized")
+            #self.trace.log_step("requirement_summarized")
             
             clarification_summary = self._summarize_clarifications(clarification_result)
-            self.trace.log_step("clarification_summarized")
+            #self.trace.log_step("clarification_summarized")
             
             prototype_summary = self._summarize_prototype(prototype_result)
-            self.trace.log_step("prototype_summarized")
+            #self.trace.log_step("prototype_summarized")
             
             # Generate AI-powered content
             executive_summary = self._generate_executive_summary(
                 requirement_summary, clarification_summary, prototype_summary
             )
-            self.trace.log_step("executive_summary_generated")
+            #self.trace.log_step("executive_summary_generated")
             self.logger.info("Executive summary generated")
             
             recommendations = self._generate_recommendations(
                 requirement_summary, clarification_summary, prototype_summary
             )
-            self.trace.log_step("recommendations_generated")
+            #self.trace.log_step("recommendations_generated")
             self.logger.info("Recommendations generated")
             
             implementation_notes = self._generate_implementation_notes(
                 requirement_summary, clarification_summary, prototype_summary
             )
-            self.trace.log_step("implementation_notes_generated")
+            #self.trace.log_step("implementation_notes_generated")
             
             risks_assumptions = self._generate_risks_assumptions(requirement_summary)
-            self.trace.log_step("risks_assumptions_generated")
+            #self.trace.log_step("risks_assumptions_generated")
             
             # Generate HTML report
             html_content = self._generate_html(
@@ -130,23 +131,32 @@ class ReporterAgent:
                 risks_assumptions=risks_assumptions,
                 prototype_result=prototype_result,
             )
-            self.trace.log_step("html_generated")
+            #self.trace.log_step("html_generated")
             self.logger.info("HTML report created")
             
             # Save report
             report_path = self._save_report(html_content, run_id)
-            self.trace.log_step("report_saved")
+            #self.trace.log_step("report_saved")
             self.logger.info(f"Report saved at {report_path}")
             
-            self.trace.log_completion()
+            self.trace.complete_agent("ReporterAgent")
             self.logger.info(f"Report generation completed for run_id: {run_id}")
             
-            return str(report_path)
+            return {
+                "report_path": str(report_path),
+                "executive_summary": executive_summary,
+                "recommendations": recommendations,
+                "implementation_notes": implementation_notes,
+                "risks_assumptions": risks_assumptions,
+                "requirement_summary": requirement_summary,
+                "clarification_summary": clarification_summary,
+                "prototype_summary": prototype_summary,
+            }
             
         except Exception as e:
             self.logger.error(f"Report generation failed: {e}")
             if self.trace:
-                self.trace.log_error(str(e))
+                self.trace.complete_agent("ReporterAgent", error = str(e))
             raise
 
     def _validate_inputs(
@@ -188,7 +198,7 @@ class ReporterAgent:
             Dictionary with summarized requirements
         """
         summary = {
-            "business_goal": requirement_result.get("business_goal", "Not specified"),
+            "business_objective": requirement_result.get("business_objective", "Not specified"),
             "kpis": requirement_result.get("kpis", []),
             "measures": requirement_result.get("measures", []),
             "dimensions": requirement_result.get("dimensions", []),
@@ -252,8 +262,10 @@ class ReporterAgent:
             prompt = f"""
             Based on the following BI analysis, generate a concise executive summary (2-3 paragraphs):
             
-            Business Goal: {requirement_summary.get('business_goal')}
-            KPIs: {', '.join(requirement_summary.get('kpis', []))}
+            Business Objective: {requirement_summary.get('business_objective', 'Not specified')}
+            KPIs: {', '.join(kpi.get("name", "")
+                             for kpi in 
+                             requirement_summary.get('kpis', []))}
             Measures: {', '.join(requirement_summary.get('measures', []))}
             Dimensions: {', '.join(requirement_summary.get('dimensions', []))}
             
@@ -290,8 +302,8 @@ class ReporterAgent:
             prompt = f"""
             Based on the following BI analysis, provide 3-5 specific recommendations for implementation:
             
-            Business Goal: {requirement_summary.get('business_goal')}
-            KPIs: {', '.join(requirement_summary.get('kpis', []))}
+            Business Objective: {requirement_summary.get('business_objective', 'Not specified')}
+            KPIs: {', '.join(kpi.get("name", "") for kpi in requirement_summary.get('kpis', []))}
             Visualizations Planned: {', '.join(prototype_summary.get('visualizations', []))}
             
             Format as a numbered list.
@@ -354,8 +366,8 @@ class ReporterAgent:
             prompt = f"""
             Identify potential risks and assumptions for the following BI initiative:
             
-            Business Goal: {requirement_summary.get('business_goal')}
-            KPIs: {', '.join(requirement_summary.get('kpis', []))}
+            Business Objective: {requirement_summary.get('business_objective', 'Not specified')}
+            KPIs: {', '.join(kpi.get("name", "") for kpi in requirement_summary.get('kpis', []))}
             Filters: {', '.join(requirement_summary.get('filters', []))}
             
             List 3-4 risks and 2-3 assumptions.
@@ -470,7 +482,7 @@ class ReporterAgent:
         generated_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         
         # Build content sections
-        kpis_html = "".join([f"<li>{self._escape_html(kpi)}</li>" for kpi in requirement_summary.get("kpis", [])])
+        kpis_html = "".join([f"<li>{self._escape_html(kpi.get('name', ''))}</li>" for kpi in requirement_summary.get("kpis", [])])
         measures_html = "".join([f"<li>{self._escape_html(m)}</li>" for m in requirement_summary.get("measures", [])])
         dimensions_html = "".join([f"<li>{self._escape_html(d)}</li>" for d in requirement_summary.get("dimensions", [])])
         filters_html = "".join([f"<li>{self._escape_html(f)}</li>" for f in requirement_summary.get("filters", [])])
@@ -637,7 +649,7 @@ class ReporterAgent:
         <div class="content">
             {self._format_section("Executive Summary", f"<p>{self._escape_html(executive_summary)}</p>")}
             
-            {self._format_section("Business Goal", f"<p>{self._escape_html(requirement_summary.get('business_goal', 'Not specified'))}</p>")}
+            {self._format_section("Business Objective", f"<p>{self._escape_html(requirement_summary.get('business_objective', 'Not specified'))}</p>")}
             
             <div class="section">
                 <h2>Requirements</h2>

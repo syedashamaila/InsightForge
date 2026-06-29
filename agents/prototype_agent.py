@@ -39,38 +39,55 @@ def generate_mock_data(table_name: str, columns: list, num_rows: int = 12) -> di
     """Generate realistic mock data for dashboard visualization"""
     mock_data = {"table_name": table_name, "columns": columns, "data": []}
     
-    def generate_value(col_name: str, col_type: str):
-        if col_type.lower() == "date":
-            start_date = datetime.now() - timedelta(days=365)
-            random_days = random.randint(0, 365)
-            return (start_date + timedelta(days=random_days)).strftime("%Y-%m-%d")
-        elif col_type.lower() == "integer":
-            return random.randint(100, 100000)
-        elif col_type.lower() == "float":
-            return round(random.uniform(1000, 50000), 2)
-        elif col_type.lower() == "string":
-            categories = ["Category A", "Category B", "Category C", "Category D"]
-            return random.choice(categories)
-        elif col_type.lower() == "currency":
-            return round(random.uniform(5000, 500000), 2)
-        else:
-            return "Sample Value"
+    # Dimension categories for realistic data
+    dimensions = ["Supplier A", "Supplier B", "Supplier C", "Supplier D", "Supplier E"]
+    regions = ["North", "South", "East", "West", "Central"]
+    categories = dimensions + regions
     
-    for i in range(num_rows):
+    # Generate 100-150 rows for realistic dashboard data
+    num_realistic_rows = min(max(num_rows, 100), 150)
+    start_date = datetime.now() - timedelta(days=num_realistic_rows - 1)
+    
+    for i in range(num_realistic_rows):
         row = {}
+        current_date = start_date + timedelta(days=i)
+        
         for col in columns:
             col_name = col.get("name", "")
             col_type = col.get("type", "string")
-            row[col_name] = generate_value(col_name, col_type)
+            
+            if col_type.lower() == "date":
+                row[col_name] = current_date.strftime("%Y-%m-%d")
+            elif col_type.lower() == "integer":
+                # Generate realistic integer counts
+                row[col_name] = random.randint(50, 5000)
+            elif col_type.lower() == "float":
+                # Generate realistic float percentages
+                row[col_name] = round(random.uniform(70, 100), 2)
+            elif col_type.lower() == "currency":
+                # Generate realistic currency values in 100k-500k range
+                base_value = random.randint(100000, 500000)
+                # Add daily variation
+                variation = random.uniform(0.85, 1.15)
+                row[col_name] = round(base_value * variation, 2)
+            elif col_type.lower() == "string":
+                # Use realistic dimension values
+                row[col_name] = random.choice(categories)
+            elif col_type.lower() == "percentage":
+                # Generate percentage values between 70-100
+                row[col_name] = round(random.uniform(70, 100), 2)
+            else:
+                row[col_name] = "Sample Value"
+        
         mock_data["data"].append(row)
     
     return mock_data
 
 
 def generate_prototype_json(requirements: dict, clarifications: dict) -> dict:
-    """Generate comprehensive dashboard prototype JSON"""
+    """Generate comprehensive dashboard prototype JSON in Power BI Executive Dashboard style"""
     
-    dashboard_title = requirements.get("dashboard_title", "Analytics Dashboard")
+    dashboard_title = requirements.get("dashboard_title", "Executive Analytics Dashboard")
     approved_metrics = clarifications.get("approved_metrics", [])
     
     # Generate mock tables and sample data
@@ -80,60 +97,192 @@ def generate_prototype_json(requirements: dict, clarifications: dict) -> dict:
     for i, metric in enumerate(approved_metrics[:3]):
         columns = [
             {"name": "Date", "type": "date"},
-            {"name": "Dimension", "type": "string"},
-            {"name": metric.get("name", f"Metric_{i}"), "type": "currency"}
+            {"name": "Region", "type": "string"},
+            {"name": "Category", "type": "string"},
+            {"name": metric.get("name", f"Metric_{i}"), "type": "currency"},
+            {"name": "Target", "type": "currency"},
+            {"name": "Performance", "type": "percentage"}
         ]
         table_data = generate_mock_data(f"Table_{i}", columns, 12)
         mock_tables.append({"table_name": table_data["table_name"], "columns": columns})
         sample_data.append(table_data)
     
-    # Define visuals with business justification
-    visuals = []
-    for i, metric in enumerate(approved_metrics[:3]):
-        visuals.append({
-            "visual_id": f"visual_{i}",
-            "visual_type": ["Column Chart", "Line Chart", "KPI Card"][i % 3],
-            "title": f"{metric.get('name', f'Metric {i}')} Trend",
-            "data_source": f"Table_{i % len(mock_tables)}",
-            "x_axis": "Date",
+    # Generate 4 KPI Cards for top row (from approved metrics)
+    kpi_cards = []
+    kpi_visual_ids = []
+    for i in range(4):
+        metric = approved_metrics[i] if i < len(approved_metrics) else {
+            "name": f"Metric {i+1}",
+            "description": "Key Performance Indicator"
+        }
+        kpi_id = f"visual_kpi_{i}"
+        kpi_visual_ids.append(kpi_id)
+        
+        kpi_cards.append({
+            "visual_id": kpi_id,
+            "visual_type": "KPI Card",
+            "title": metric.get("name", f"KPI {i+1}"),
+            "data_source": f"Table_{i % max(len(mock_tables), 1)}",
+            "x_axis": "Region",
             "y_axis": metric.get("name", "Value"),
-            "business_justification": f"This visual tracks {metric.get('description', 'performance')} over time, directly addressing the requirement: {metric.get('requirement', 'N/A')}",
-            "recommended_size": "medium"
+            "business_justification": f"Key metric: {metric.get('description', 'Performance tracking')}. {metric.get('requirement', 'Supports business objectives.')}",
+            "recommended_size": "small",
+            "config": {
+                "show_trend": True,
+                "trend_direction": "up" if i % 2 == 0 else "stable",
+                "comparison_period": "vs last month",
+                "value_format": "currency" if i < 2 else "percentage",
+                "color_scheme": ["#0078D4", "#107C10", "#FF8C00", "#E81B23"][i],
+                "threshold_high": 80,
+                "threshold_low": 20
+            }
         })
     
-    # Page layout
+    # Second row: Column Chart and Line Chart
+    second_row_visuals = []
+    
+    # Column Chart
+    column_chart = {
+        "visual_id": "visual_column_chart",
+        "visual_type": "Column Chart",
+        "title": f"{approved_metrics[0].get('name', 'Performance')} by Region",
+        "data_source": f"Table_0",
+        "x_axis": "Region",
+        "y_axis": approved_metrics[0].get("name", "Value"),
+        "business_justification": "Regional performance comparison enables identification of top and underperforming areas",
+        "recommended_size": "medium",
+        "config": {
+            "show_data_labels": True,
+            "show_legend": True,
+            "color_scheme": "#0078D4",
+            "sort_order": "descending",
+            "enable_drill_down": True,
+            "drill_targets": ["Category", "Territory"]
+        }
+    }
+    second_row_visuals.append(column_chart)
+    
+    # Line Chart
+    line_chart = {
+        "visual_id": "visual_line_chart",
+        "visual_type": "Line Chart",
+        "title": f"{approved_metrics[1].get('name', 'Trend')} Over Time",
+        "data_source": f"Table_1",
+        "x_axis": "Date",
+        "y_axis": approved_metrics[1].get("name", "Value"),
+        "business_justification": "Time-series trend analysis provides insights into seasonal patterns and performance momentum",
+        "recommended_size": "medium",
+        "config": {
+            "show_data_points": True,
+            "show_legend": True,
+            "color_scheme": "#107C10",
+            "line_style": "solid",
+            "enable_drill_down": True,
+            "drill_targets": ["Month", "Quarter"],
+            "show_forecast": False
+        }
+    }
+    second_row_visuals.append(line_chart)
+    
+    # Third row: Treemap and Pie Chart
+    third_row_visuals = []
+    
+    # Treemap
+    treemap = {
+        "visual_id": "visual_treemap",
+        "visual_type": "Treemap",
+        "title": "Category Distribution",
+        "data_source": f"Table_{2 % max(len(mock_tables), 1)}",
+        "x_axis": "Category",
+        "y_axis": "Performance",
+        "business_justification": "Hierarchical view of category contribution and relative importance to overall performance",
+        "recommended_size": "medium",
+        "config": {
+            "show_data_labels": True,
+            "color_scheme": "gradient",
+            "gradient_start": "#FFB900",
+            "gradient_end": "#FF8C00",
+            "enable_drill_down": True,
+            "drill_targets": ["Subcategory", "Product"]
+        }
+    }
+    third_row_visuals.append(treemap)
+    
+    # Pie Chart
+    pie_chart = {
+        "visual_id": "visual_pie_chart",
+        "visual_type": "Pie Chart",
+        "title": "Revenue Distribution by Supplier",
+        "data_source": f"Table_{1 % max(len(mock_tables), 1)}",
+        "x_axis": "Region",
+        "y_axis": approved_metrics[0].get("name", "Value"),
+        "business_justification": "Supplier/segment composition analysis for portfolio optimization decisions",
+        "recommended_size": "medium",
+        "config": {
+            "show_percentage": True,
+            "show_legend": True,
+            "legend_position": "right",
+            "color_scheme": "multi",
+            "enable_drill_down": True,
+            "drill_targets": ["Location", "Account"]
+        }
+    }
+    third_row_visuals.append(pie_chart)
+    
+    # Fourth row: Detailed Table
+    detail_table = {
+        "visual_id": "visual_detail_table",
+        "visual_type": "Table",
+        "title": "Performance Details",
+        "data_source": "Table_0",
+        "x_axis": "Date",
+        "y_axis": "Multiple Fields",
+        "business_justification": "Comprehensive data table for detailed analysis, filtering, and exporting transaction-level insights",
+        "recommended_size": "large",
+        "config": {
+            "show_row_numbers": True,
+            "enable_sorting": True,
+            "enable_filtering": True,
+            "conditional_formatting": True,
+            "page_size": 20,
+            "columns": [
+                {"name": "Date", "width": 100},
+                {"name": "Region", "width": 80},
+                {"name": "Category", "width": 100},
+                {"name": "Performance", "width": 100},
+                {"name": "Target", "width": 100}
+            ]
+        }
+    }
+    
+    # Combine all visuals
+    visuals = kpi_cards + second_row_visuals + third_row_visuals + [detail_table]
+    
+    # Comprehensive page layout grid
     pages = [
         {
             "page_id": "overview",
-            "page_name": "Overview",
-            "visuals": [v["visual_id"] for v in visuals[:3]],
+            "page_name": "Executive Overview",
+            "visuals": [v["visual_id"] for v in visuals],
             "layout": {
-                "rows": 2,
-                "columns": 2,
+                "rows": 4,
+                "columns": 4,
                 "grid": [
-                    {"visual_id": visuals[0]["visual_id"] if len(visuals) > 0 else None, "row": 1, "col": 1, "size": "medium"},
-                    {"visual_id": visuals[1]["visual_id"] if len(visuals) > 1 else None, "row": 1, "col": 2, "size": "medium"},
-                    {"visual_id": visuals[2]["visual_id"] if len(visuals) > 2 else None, "row": 2, "col": 1, "size": "medium"}
+                    # Row 1: 4 KPI Cards
+                    {"visual_id": "visual_kpi_0", "row": 1, "col": 1, "row_span": 1, "col_span": 1, "size": "small"},
+                    {"visual_id": "visual_kpi_1", "row": 1, "col": 2, "row_span": 1, "col_span": 1, "size": "small"},
+                    {"visual_id": "visual_kpi_2", "row": 1, "col": 3, "row_span": 1, "col_span": 1, "size": "small"},
+                    {"visual_id": "visual_kpi_3", "row": 1, "col": 4, "row_span": 1, "col_span": 1, "size": "small"},
+                    # Row 2: Column Chart and Line Chart
+                    {"visual_id": "visual_column_chart", "row": 2, "col": 1, "row_span": 1, "col_span": 2, "size": "medium"},
+                    {"visual_id": "visual_line_chart", "row": 2, "col": 3, "row_span": 1, "col_span": 2, "size": "medium"},
+                    # Row 3: Treemap and Pie Chart
+                    {"visual_id": "visual_treemap", "row": 3, "col": 1, "row_span": 1, "col_span": 2, "size": "medium"},
+                    {"visual_id": "visual_pie_chart", "row": 3, "col": 3, "row_span": 1, "col_span": 2, "size": "medium"},
+                    # Row 4: Detail Table
+                    {"visual_id": "visual_detail_table", "row": 4, "col": 1, "row_span": 1, "col_span": 4, "size": "large"}
                 ]
             }
-        }
-    ]
-    
-    # KPI Cards
-    kpi_cards = [
-        {
-            "kpi_id": "kpi_1",
-            "title": "Total Revenue",
-            "value_field": approved_metrics[0]["name"] if approved_metrics else "Value",
-            "comparison": "vs last month",
-            "trend": "up"
-        },
-        {
-            "kpi_id": "kpi_2",
-            "title": "Average Performance",
-            "value_field": approved_metrics[1]["name"] if len(approved_metrics) > 1 else "Value",
-            "comparison": "vs average",
-            "trend": "stable"
         }
     ]
     
@@ -148,12 +297,20 @@ def generate_prototype_json(requirements: dict, clarifications: dict) -> dict:
             "applies_to": ["all_visuals"]
         },
         {
-            "filter_id": "dimension_slicer",
+            "filter_id": "region_slicer",
+            "filter_type": "Dropdown",
+            "display_as": "Slicer",
+            "label": "Region",
+            "values": ["North", "South", "East", "West", "Central"],
+            "applies_to": ["all_visuals"]
+        },
+        {
+            "filter_id": "category_slicer",
             "filter_type": "Dropdown",
             "display_as": "Slicer",
             "label": "Category",
-            "values": ["Category A", "Category B", "Category C", "Category D"],
-            "applies_to": ["visual_0", "visual_1"]
+            "values": ["Supplier A", "Supplier B", "Supplier C", "Supplier D", "Supplier E"],
+            "applies_to": ["visual_column_chart", "visual_line_chart", "visual_detail_table"]
         }
     ]
     
@@ -163,13 +320,19 @@ def generate_prototype_json(requirements: dict, clarifications: dict) -> dict:
             "drill_id": "drill_1",
             "hierarchy_name": "Date Hierarchy",
             "levels": ["Year", "Quarter", "Month", "Day"],
-            "applies_to": ["visual_0"]
+            "applies_to": ["visual_line_chart", "visual_detail_table"]
         },
         {
             "drill_id": "drill_2",
+            "hierarchy_name": "Geography Hierarchy",
+            "levels": ["Region", "Territory", "Location"],
+            "applies_to": ["visual_column_chart", "visual_pie_chart", "visual_treemap"]
+        },
+        {
+            "drill_id": "drill_3",
             "hierarchy_name": "Category Hierarchy",
-            "levels": ["Region", "Territory", "Store"],
-            "applies_to": ["visual_1"]
+            "levels": ["Category", "Subcategory", "Product"],
+            "applies_to": ["visual_treemap", "visual_detail_table"]
         }
     ]
     
@@ -177,24 +340,31 @@ def generate_prototype_json(requirements: dict, clarifications: dict) -> dict:
     color_rules = [
         {
             "rule_id": "rule_1",
-            "visual_id": "kpi_1",
+            "visual_id": "visual_kpi_0",
             "condition": "value > 100000",
             "color": "#00B050",
             "description": "Green for high performance"
         },
         {
             "rule_id": "rule_2",
-            "visual_id": "kpi_1",
+            "visual_id": "visual_kpi_0",
             "condition": "value < 50000",
             "color": "#FF0000",
             "description": "Red for low performance"
         },
         {
             "rule_id": "rule_3",
-            "visual_id": "kpi_1",
-            "condition": "value between 50000 and 100000",
-            "color": "#FFC000",
-            "description": "Yellow for moderate performance"
+            "visual_id": "visual_detail_table",
+            "condition": "Performance > 90",
+            "color": "#E2EFDA",
+            "description": "Light green for exceeding targets"
+        },
+        {
+            "rule_id": "rule_4",
+            "visual_id": "visual_detail_table",
+            "condition": "Performance < 70",
+            "color": "#FCE4D6",
+            "description": "Light red for underperformance"
         }
     ]
     
@@ -212,26 +382,32 @@ def generate_prototype_json(requirements: dict, clarifications: dict) -> dict:
         "Drill_downs": drill_downs,
         "color_rules": color_rules,
         "Layout": {
-            "page_layout": "Grid",
-            "grid_size": "2x2",
-            "default_theme": "Modern",
+            "page_layout": "Power BI Grid",
+            "grid_size": "4x4",
+            "default_theme": "Executive",
             "mobile_responsive": True,
             "recommended_canvas_size": "1920x1080"
         },
         "Client_review_notes": [
-            "This prototype demonstrates the key metrics and dimensions approved in the clarification phase",
-            "All visuals include mock data to simulate real-world performance",
-            "Recommended to validate visual types and layout with stakeholders before development",
-            "Color scheme follows accessibility guidelines for colorblind users",
-            "Drill-down hierarchies enable deeper exploration of data",
-            "Date range filter applies globally for easy period comparison"
+            "Power BI Executive Dashboard with 8 visuals: 4 KPI cards, 2 charts (column and line), 2 distribution visuals (treemap and pie), plus detail table",
+            "Top row provides at-a-glance KPI status for executive decision making",
+            "Second row enables regional and temporal trend analysis",
+            "Third row shows category and supplier distribution for portfolio optimization",
+            "Fourth row provides drill-down capability for detailed exploration",
+            "All visuals include mock data reflecting realistic business scenarios",
+            "Comprehensive filtering with date range, region, and category slicers",
+            "Three-level drill-down hierarchies enable progressive disclosure of detail",
+            "Conditional formatting highlights performance anomalies automatically",
+            "Color scheme follows accessibility guidelines and Power BI best practices"
         ],
         "Ready_for_development": True,
         "Next_steps": [
-            "Client review and feedback on visual recommendations",
-            "Finalize color scheme and branding",
-            "Validate drill-down hierarchies",
-            "Prepare for Power BI development phase"
+            "Client review and approval of dashboard layout and visual selection",
+            "Finalize KPI definitions and calculation formulas",
+            "Validate data source connections and refresh schedules",
+            "Implement drill-through actions for deeper analysis",
+            "Set up scheduled alerts for KPI threshold violations",
+            "Prepare for Power BI development phase with confirmed specifications"
         ]
     }
     
@@ -284,12 +460,11 @@ async def run_prototype_agent(structured_requirements: dict, clarification_outpu
     
     final_state = await agent.ainvoke(initial_state)
     
-    if final_state.error:
-        logger.error(f"Prototype agent error: {final_state.error}")
-        return {"error": final_state.error}
+    if final_state.get("error"):
+        logger.error(f"Prototype agent error: {final_state.get('error')}")
+        return {"error": final_state.get("error")}
     
-    return final_state.prototype_output
-
+    return final_state.get("prototype_output", {})
 
 class PrototypeAgent:
     """Backward-compatible PrototypeAgent class"""
@@ -299,9 +474,16 @@ class PrototypeAgent:
         self.llm = get_llm()
         logger.info("PrototypeAgent initialized with LLM")
     
-    async def process(self, requirement_json: dict) -> dict:
+    async def process(self, requirement_json: dict, clarification_result: dict) -> dict:
         """
         Process requirement JSON and generate prototype.
         This method provides backward compatibility by wrapping the internal processing.
         """
-        return await run_prototype_agent(requirement_json, {})
+        return await run_prototype_agent(requirement_json, clarification_result)
+    
+    def create_prototype(self, requirement_result, clarification_result):
+        import asyncio
+
+        return asyncio.run(
+            run_prototype_agent(requirement_result, clarification_result)
+        )

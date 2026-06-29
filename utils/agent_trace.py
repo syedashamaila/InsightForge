@@ -356,3 +356,40 @@ class AgentTrace:
 
         logger.info(f"Trace summary: {summary}")
         return summary
+
+    def start_pipeline(self, run_id):
+        logger.info(f"Pipeline Started: {run_id}")
+    
+    def complete_pipeline(self, run_id, execution_time):
+        logger.info(f"Pipeline Completed: {run_id} in {execution_time} seconds")
+
+    def start_agent(self, agent_name, run_id=None):
+        self.start_trace(agent_name)
+
+    def complete_agent(self, agent_name, error=None):
+        if error:
+            self.fail_trace(agent_name, error)
+        else:
+            self.end_trace(agent_name)
+
+    def record_error(self, error):
+        logger.error(f"Error recorded: {error}")
+
+    def start_operation(self,operation_name: str):
+        self._current_operation = operation_name
+
+    def log_input(self, data):
+        self._last_input = data
+
+    def log_output(self, data):
+        self._last_output = data
+
+    def end_operation(self, status = "success", output_summary = None, error = None):
+       pass
+
+    def get_data(self):
+        return {
+           "input": getattr(self, "_last_input", {}),
+           "output": getattr(self, "_last_output", {}),
+           "operation": getattr(self, "_current_operation", None)
+        }

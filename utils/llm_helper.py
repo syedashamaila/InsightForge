@@ -122,7 +122,7 @@ def get_llm(
     # Create base configuration
     api_key = os.getenv("GOOGLE_API_KEY")
     llm_config = {
-        "model": "gemini-pro",
+        "model": "gemini-2.5-flash",
         "google_api_key": api_key,
     }
 

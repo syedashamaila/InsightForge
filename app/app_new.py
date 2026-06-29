@@ -1,33 +1,28 @@
-"""
-InsightForge – Multi-Agent BI Requirement Analysis Platform
+import os
+import sys
 
-A production-grade Streamlit application with professional dashboard layout
-inspired by Microsoft Fabric/Azure AI Studio. Three-column layout: compact header,
-fixed left navigation, central workflow area, and right audit panel.
+print("CWD:", os.getcwd())
+print("Python Path:", sys.path)
+print("FILE:", __file__)
 
-Architecture:
-- Pure presentation layer (no business logic)
-- State management via Streamlit session_state
-- Professional light theme with blue accents
-- Compact, minimal spacing design
-- Three-column responsive dashboard layout
-"""
 
 import streamlit as st
-import logging
-from datetime import datetime
-from typing import Dict, Any, Optional, List
-from pathlib import Path
-import json
 import pandas as pd
 import plotly.express as px
-import agents
+import plotly.graph_objects as go
+from datetime import datetime, timedelta
+import json
+import logging
+from typing import Dict, Any, Optional, List
+from pathlib import Path
+#import agents
+#from agents.clarification_agent import ClarificationAgent
 
 
-# Configure page
+# Page config
 st.set_page_config(
-    page_title="InsightForge – BI Requirement Analysis",
-    page_icon="🔷",
+    page_title="insightForge",
+    page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -36,577 +31,306 @@ st.set_page_config(
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# ============================================================================
-# CUSTOM CSS - MODERN ENTERPRISE THEME
-# ============================================================================
 
-def apply_custom_css() -> None:
-    """Apply Microsoft enterprise-grade theme with premium styling."""
-    st.markdown("""
-    <style>
-    /* Root Variables - Microsoft Office Color Palette */
-    :root {
-        --primary-color: #0078d4;
-        --primary-light: #107c10;
-        --primary-dark: #005a9e;
-        --secondary-color: #f3f2f1;
-        --bg-main: #fafafa;
-        --bg-card: #ffffff;
-        --bg-hover: #f7f7f7;
-        --bg-header: #f7f7f7;
-        --text-primary: #242424;
-        --text-secondary: #595959;
-        --text-tertiary: #8a8a8a;
-        --border-color: #e1e1e1;
-        --success: #107c10;
-        --warning: #ffb900;
-        --error: #d83b01;
-        --info: #0078d4;
-        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
-        --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.12);
-        --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.15);
-    }
-
-    /* Global Styles */
+# ============================================================================
+# CUSTOM CSS for modern SaaS styling
+# ============================================================================
+st.markdown("""
+<style>
     * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
     }
-
+    
     html, body {
-        background: var(--bg-main);
-        color: var(--text-primary);
-        font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
-        font-size: 14px;
-        line-height: 1.5;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        height: 100%;
+        width: 100%;
     }
-
-    /* Main Layout */
-    .main {
-        background: var(--bg-main);
-        padding: 0 !important;
+    
+    /* Main container */
+            
+    [data-testid="stAppViewContainer"] {
+            background: linear-gradient(135deg, #eef6ff 0%, #ffffff 45%, #f3edff 100%);
     }
-
-    /* Sidebar */
+    .main .block-container {
+       max-width: 1400px;
+       padding-top: 1rem;
+       padding-bottom: 1rem;
+    }
+    
+    /* Sidebar styling */
     [data-testid="stSidebar"] {
         background: #ffffff;
-        border-right: 1px solid var(--border-color);
-        width: 300px !important;
-        box-shadow: 1px 0 3px rgba(0, 0, 0, 0.06);
+        border-right: 1px solid #e8e8e8;
     }
-
-    [data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
-        padding: 28px 20px !important;
-    }
-
-    /* Sidebar Text */
-    [data-testid="stSidebar"] p, [data-testid="stSidebar"] span {
-        color: var(--text-primary) !important;
-    }
-
-    /* Cards and Containers */
-    .stCard, [data-testid="stVerticalBlock"] > div {
-        background: var(--bg-card) !important;
-        border: 1px solid var(--border-color) !important;
-        border-radius: 8px !important;
-        box-shadow: var(--shadow-sm) !important;
-        transition: all 0.2s ease !important;
-        padding: 0 !important;
-    }
-
-    .stCard:hover {
-        border-color: var(--primary-color) !important;
-        box-shadow: var(--shadow-md) !important;
-    }
-
-    /* Expanders */
-    .streamlit-expanderHeader {
-        background: linear-gradient(90deg, rgba(0, 82, 204, 0.08), transparent) !important;
-        border-radius: 12px !important;
-        border: 1px solid var(--border-color) !important;
-        color: var(--text-primary) !important;
-        padding: 16px !important;
-        font-weight: 600 !important;
-        font-size: 15px !important;
-        transition: all 0.3s ease !important;
-    }
-
-    .streamlit-expanderHeader:hover {
-        background: linear-gradient(90deg, rgba(0, 82, 204, 0.12), transparent) !important;
-        border-color: var(--primary-light) !important;
-        box-shadow: var(--shadow-sm) !important;
-    }
-
-    .streamlit-expander {
-        background: transparent !important;
-        border: none !important;
-    }
-
-    /* Buttons */
-    .stButton > button {
-        background: var(--primary-color) !important;
-        color: white !important;
-        border: none !important;
-        border-radius: 8px !important;
-        padding: 12px 28px !important;
-        font-weight: 600 !important;
-        font-size: 14px !important;
-        transition: all 0.3s ease !important;
-        box-shadow: var(--shadow-sm) !important;
-        text-transform: none !important;
-        letter-spacing: 0 !important;
-        cursor: pointer !important;
-    }
-
-    .stButton > button:hover {
-        background: var(--primary-dark) !important;
-        box-shadow: var(--shadow-md) !important;
-        transform: translateY(-1px) !important;
-    }
-
-    .stButton > button:active {
-        transform: translateY(0) !important;
-    }
-
-    /* Text Input */
-    .stTextInput > div > div > input,
-    .stTextArea > div > div > textarea,
-    .stSelectbox > div > div > select {
-        background: var(--bg-card) !important;
-        color: var(--text-primary) !important;
-        border: 1px solid var(--border-color) !important;
-        border-radius: 8px !important;
-        padding: 12px 14px !important;
-        font-size: 14px !important;
-        transition: all 0.3s ease !important;
-    }
-
-    .stTextInput > div > div > input:focus,
-    .stTextArea > div > div > textarea:focus,
-    .stSelectbox > div > div > select:focus {
-        border-color: var(--primary-color) !important;
-        box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.08) !important;
-        background: var(--bg-main) !important;
-    }
-
-    /* KPI Cards */
-    .kpi-card {
-        background: linear-gradient(135deg, rgba(0, 82, 204, 0.08) 0%, rgba(0, 82, 204, 0.04) 100%);
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        padding: 20px;
+    
+    /* Logo section */
+    .logo-section {
+        padding: 28px 20px;
         text-align: center;
-        transition: all 0.3s ease;
-        box-shadow: var(--shadow-sm);
-    }
-
-    .kpi-card:hover {
-        background: linear-gradient(135deg, rgba(0, 82, 204, 0.12) 0%, rgba(0, 82, 204, 0.06) 100%);
-        border-color: var(--primary-color);
-        box-shadow: var(--shadow-md);
-    }
-
-    .kpi-value {
-        font-size: 32px;
-        font-weight: 700;
-        color: var(--primary-color);
-        margin: 12px 0 8px 0;
-    }
-
-    .kpi-label {
-        font-size: 13px;
-        color: var(--text-secondary);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        font-weight: 600;
-    }
-
-    /* Metric */
-    .metric-card {
-        background: var(--bg-card);
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        padding: 16px;
-        text-align: center;
-    }
-
-    /* Badges */
-    .badge {
-        display: inline-block;
-        padding: 6px 14px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-        text-transform: capitalize;
-        letter-spacing: 0;
-        margin: 4px 4px 4px 0;
-        transition: all 0.3s ease;
-        border: 1px solid;
-    }
-
-    .badge-success {
-        background: rgba(15, 143, 71, 0.1);
-        color: #0f8f47;
-        border-color: rgba(15, 143, 71, 0.2);
-    }
-
-    .badge-warning {
-        background: rgba(217, 119, 6, 0.1);
-        color: #d97706;
-        border-color: rgba(217, 119, 6, 0.2);
-    }
-
-    .badge-error {
-        background: rgba(211, 47, 47, 0.1);
-        color: #d32f2f;
-        border-color: rgba(211, 47, 47, 0.2);
-    }
-
-    .badge-info {
-        background: rgba(0, 82, 204, 0.1);
-        color: #0052cc;
-        border-color: rgba(0, 82, 204, 0.2);
-    }
-
-    /* Workflow Progress */
-    .workflow-stage {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        padding: 16px;
-        background: var(--bg-card);
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        margin: 10px 0;
-        transition: all 0.3s ease;
-    }
-
-    .workflow-stage.completed {
-        background: rgba(15, 143, 71, 0.08);
-        border-color: rgba(15, 143, 71, 0.2);
-    }
-
-    .workflow-stage.current {
-        background: rgba(0, 82, 204, 0.1);
-        border-color: var(--primary-color);
-        border-left: 4px solid var(--primary-color);
-        box-shadow: var(--shadow-sm);
-    }
-
-    .workflow-stage.pending {
-        background: var(--bg-card);
-        border-color: var(--border-color);
-        opacity: 0.5;
-    }
-
-    .stage-icon {
-        font-size: 22px;
-        flex-shrink: 0;
-    }
-
-    .stage-label {
-        font-weight: 600;
-        flex: 1;
-        color: var(--text-primary);
-        font-size: 14px;
-    }
-
-    .stage-status {
-        font-size: 11px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.3px;
-        color: var(--text-secondary);
-    }
-
-    /* Dividers */
-    hr {
-        border: none;
-        height: 1px;
-        background: linear-gradient(90deg, transparent, var(--border-color), transparent);
-        margin: 24px 0 !important;
-    }
-
-    /* Hero Header */
-    .hero-section {
-        background: linear-gradient(135deg, #f0f4ff 0%, #e8eeff 100%);
-        border: none;
-        border-radius: 0;
-        padding: 80px 48px;
-        text-align: center;
-        margin-bottom: 0;
-        box-shadow: none;
-        margin-left: -16px;
-        margin-right: -16px;
-        margin-top: -16px;
-    }
-
-    .hero-icon {
-        font-size: 64px;
+        border-bottom: 1px solid #ececec;
         margin-bottom: 24px;
-        display: block;
     }
-
-    .hero-title {
-        font-size: 64px;
+    
+    .logo-section img{
+            width: 64px;
+            margin-bottom:12px;
+    }
+            
+    .logo-icon {
+        font-size: 48px;
+        margin-bottom: 10px;
+    }
+    
+    .logo-text {
+        font-size: 30px;
         font-weight: 800;
-        background: linear-gradient(135deg, #000000 0%, #0078d4 100%);
+        letter-spacing: -0.5px;
+        background: linear-gradient(135deg, #3366ff 0%, #7366ff 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        margin-bottom: 8px;
-        letter-spacing: -1px;
     }
-
-    .hero-title-accent {
-        color: #0078d4;
-    }
-
-    .hero-subtitle {
-        font-size: 24px;
-        color: var(--text-secondary);
-        margin-bottom: 16px;
-        font-weight: 600;
-    }
-
-    .hero-description {
-        font-size: 16px;
-        color: var(--text-secondary);
-        max-width: 800px;
-        margin: 0 auto;
-        line-height: 1.8;
-    }
-
-    /* Error Cards */
-    .error-card {
-        background: rgba(211, 47, 47, 0.08);
-        border: 1px solid rgba(211, 47, 47, 0.2);
-        border-radius: 12px;
-        padding: 16px;
-        border-left: 4px solid #d32f2f;
-        margin: 16px 0;
-    }
-
-    .error-title {
-        font-weight: 700;
-        margin-bottom: 8px;
-        color: #d32f2f;
-        font-size: 14px;
-    }
-
-    .error-message {
-        font-size: 14px;
-        line-height: 1.5;
-        color: var(--text-primary);
-    }
-
-    /* Success Cards */
-    .success-card {
-        background: rgba(15, 143, 71, 0.08);
-        border: 1px solid rgba(15, 143, 71, 0.2);
-        border-radius: 12px;
-        padding: 16px;
-        border-left: 4px solid #0f8f47;
-        margin: 16px 0;
-    }
-
-    .success-title {
-        font-weight: 700;
-        margin-bottom: 8px;
-        color: #0f8f47;
-        font-size: 14px;
-    }
-
-    .success-message {
-        font-size: 14px;
-        line-height: 1.5;
-        color: var(--text-primary);
-    }
-
-    /* Audit Trail */
-    .audit-timeline {
-        position: relative;
-        padding: 0;
-    }
-
-    .audit-event {
-        background: var(--bg-card);
-        border-left: 3px solid var(--primary-color);
-        border-radius: 10px;
-        padding: 14px;
-        margin: 12px 0;
-        font-size: 13px;
+    
+    /* Card styling */
+    .card {
+        background: #ffffff;
+        border-radius: 20px;
+        padding: 28px;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+        border: 1px solid #edf1f7;
         transition: all 0.3s ease;
-        position: relative;
-        padding-left: 18px;
+        margin-bottom: 20px;
     }
-
-    .audit-event::before {
-        content: '';
-        position: absolute;
-        left: -10px;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        background: var(--primary-color);
-        border: 3px solid var(--bg-main);
-    }
-
-    .audit-event:hover {
-        background: var(--bg-hover);
-        box-shadow: var(--shadow-sm);
-    }
-
-    .audit-timestamp {
-        color: var(--text-tertiary);
-        font-size: 11px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.3px;
-    }
-
-    .audit-agent {
-        color: var(--primary-color);
-        font-weight: 700;
-        margin: 6px 0 4px 0;
-        font-size: 14px;
-    }
-
-    .audit-action {
-        color: var(--text-primary);
-        margin: 4px 0;
-        font-size: 13px;
-    }
-
-    /* Requirements Card */
-    .requirement-card {
-        background: linear-gradient(135deg, rgba(0, 82, 204, 0.08) 0%, rgba(0, 82, 204, 0.04) 100%);
-        border: 1px solid var(--border-color);
-        border-radius: 16px;
-        padding: 24px;
-        box-shadow: var(--shadow-sm);
-    }
-
-    .requirement-title {
-        font-size: 18px;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: 8px;
-    }
-
-    .requirement-description {
-        font-size: 14px;
-        color: var(--text-secondary);
-        margin-bottom: 16px;
-        line-height: 1.6;
-    }
-
-    /* Dashboard Grid */
-    .dashboard-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 20px;
-        margin: 20px 0;
-    }
-
-    .dashboard-card {
-        background: var(--bg-card);
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        padding: 20px;
-        transition: all 0.3s ease;
-        box-shadow: var(--shadow-sm);
-    }
-
-    .dashboard-card:hover {
-        box-shadow: var(--shadow-md);
-        transform: translateY(-2px);
-    }
-
-    /* Feature Cards */
-    .feature-card {
-        background: var(--bg-card);
-        border: 1px solid var(--border-color);
-        border-radius: 14px;
-        padding: 28px 24px;
-        text-align: center;
-        box-shadow: var(--shadow-sm);
-        transition: all 0.3s ease;
-    }
-
-    .feature-card:hover {
-        box-shadow: var(--shadow-md);
+    
+    .card:hover {
+        box-shadow: 0 18px 45px rgba(15, 23, 42, 0.15);
         transform: translateY(-4px);
     }
-
-    .feature-icon {
-        font-size: 40px;
-        margin-bottom: 16px;
-        display: block;
-    }
-
-    .feature-title {
-        font-size: 16px;
+    
+    .card-title {
+        font-size: 22px;
         font-weight: 700;
-        color: var(--text-primary);
+        margin-bottom: 8px;
+        color: #1f2937;
+    }
+            
+    .section-title{
+            font-size:28px;
+            font-weight:700;
+            color:#1e293b;
+            margin-bottom:20px;
+            }
+    .center{
+            text-align:center;
+            }
+
+    .card-subtitle {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 16px;
+        line-height: 1.5;
+    }
+    
+    /* Workflow cards */
+    .workflow-card {
+        background: #ffffff;
+        border-radius: 18px;
+        padding: 24px;
+        text-align: center;
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+        border: 1px solid #edf1f7;
+        transition: all 0.3s ease;
+        min-height: 200px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    
+    .workflow-card:hover {
+        box-shadow: 0 20px 45px rgba(15, 23, 42, 0.15);
+        transform: translateY(-6px);
+    }
+    
+    .workflow-icon {
+        font-size: 42px;
+        margin-bottom: 18px;
+    }
+    
+    .workflow-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1f2937;
         margin-bottom: 12px;
     }
-
-    .feature-description {
+    
+    .workflow-status {
+            display: inline-block;
         font-size: 13px;
-        color: var(--text-secondary);
+        font-weight: 600;
+        color: #16a34a;
+        padding: 8px 18px;
+        background: #ecfdf5;
+        border-radius: 999px;
+        margin-top: 18px;
+    }
+    
+    /* Hero section */
+    .hero {
+        text-align: center;
+        padding: 60px 20px;
+        margin-bottom: 40px;
+    }
+    
+    .hero-logo {
+        font-size: 72px;
+        margin-bottom: 20px;
+    }
+    
+    .hero-title {
+        font-size: 56px;
+        font-weight: 700;
+        margin-bottom: 12px;
+        background: linear-gradient(135deg, #1a1a1a 0%, #3366ff 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .hero-subtitle {
+        font-size: 20px;
+        color: #666;
+        margin-bottom: 16px;
+        font-weight: 600;
+    }
+    
+    .hero-description {
+        font-size: 16px;
+        color: #888;
+        max-width: 600px;
+        margin: 0 auto 40px;
         line-height: 1.6;
     }
-
-    /* Responsive */
-    @media (max-width: 1024px) {
-        .hero-section {
-            padding: 40px 24px;
-        }
-
-        .hero-title {
-            font-size: 40px;
-        }
-
-        .hero-subtitle {
-            font-size: 18px;
-        }
+            
+    
+    
+    /* Status card */
+    .status-card {
+        background: white;
+        border-radius: 12px;
+        padding: 16px;
+        margin-top: 20px;
+        border: 1px solid #e0e0e0;
     }
-
-    @media (max-width: 768px) {
-        .hero-title {
-            font-size: 32px;
-        }
-
-        .hero-subtitle {
-            font-size: 16px;
-        }
+    
+    .status-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 0;
+        font-size: 14px;
     }
-
-    /* Scrollbar */
-    ::-webkit-scrollbar {
+    
+    .status-label {
+        color: #666;
+    }
+    
+    .status-value {
+        font-weight: 600;
+        color: #1a1a1a;
+    }
+    
+    .status-indicator {
+        display: inline-block;
         width: 8px;
         height: 8px;
+        border-radius: 50%;
+        margin-right: 6px;
     }
-
-    ::-webkit-scrollbar-track {
-        background: rgba(0, 82, 204, 0.04);
+    
+    .status-indicator.active {
+        background: #10b981;
     }
-
-    ::-webkit-scrollbar-thumb {
-        background: rgba(0, 82, 204, 0.2);
-        border-radius: 4px;
+    
+    /* Timeline */
+    .timeline {
+        position: relative;
+        padding: 20px 0;
     }
-
-    ::-webkit-scrollbar-thumb:hover {
-        background: rgba(0, 82, 204, 0.3);
+    
+    .timeline-item {
+        display: flex;
+        margin-bottom: 24px;
+        position: relative;
+        padding-left: 40px;
     }
-    </style>
-    """, unsafe_allow_html=True)
-
+    
+    .timeline-dot {
+        position: absolute;
+        left: 0;
+        width: 12px;
+        height: 12px;
+        background: #3366ff;
+        border-radius: 50%;
+        top: 5px;
+        border: 3px solid white;
+        box-shadow: 0 0 0 2px #3366ff;
+    }
+    
+    .timeline-content {
+        background: white;
+        border-radius: 8px;
+        padding: 12px 16px;
+        flex: 1;
+        border-left: 2px solid #e0e0e0;
+        padding-left: 16px;
+    }
+    
+    .timeline-time {
+        font-size: 12px;
+        color: #999;
+        margin-bottom: 4px;
+    }
+    
+    .timeline-message {
+        font-size: 14px;
+        color: #333;
+        font-weight: 500;
+    }
+    
+    /* KPI cards */
+    .kpi-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        border-left: 4px solid #3366ff;
+    }
+    
+    .kpi-value {
+        font-size: 32px;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin: 10px 0;
+    }
+    
+    .kpi-label {
+        font-size: 12px;
+        color: #999;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .kpi-change {
+        font-size: 12px;
+        color: #10b981;
+        margin-top: 8px;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # ============================================================================
 # SESSION STATE INITIALIZATION
@@ -615,6 +339,7 @@ def apply_custom_css() -> None:
 def initialize_session() -> None:
     """Initialize Streamlit session state with default values."""
     defaults = {
+        "page": "Home",
         "business_requirement": "",
         "workflow_started": False,
         "current_stage": "idle",
@@ -622,6 +347,7 @@ def initialize_session() -> None:
         "audit_trail": [],
         "error_message": None,
         "success_message": None,
+        "analysis_complete": False,
     }
 
     for key, value in defaults.items():
@@ -638,6 +364,8 @@ def reset_session() -> None:
     st.session_state.audit_trail = []
     st.session_state.error_message = None
     st.session_state.success_message = None
+    st.session_state.page = "Home"
+    st.session_state.analysis_complete = False
     logger.info("Session state reset")
 
 
@@ -664,92 +392,69 @@ def set_success(message: str) -> None:
     st.session_state.success_message = message
     logger.info(message)
 
+initialize_session()
+
 
 # ============================================================================
-# HEADER SECTION
+# SIDEBAR AND NAVIGATION
 # ============================================================================
 
-def render_header() -> None:
-    """Render compact header section."""
+# Sidebar
+with st.sidebar:
+    # Logo section
     st.markdown("""
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #d9d9d9;">
-        <div>
-            <div style="font-size: 16px; font-weight: 700; color: #1a1a1a;">🔷 InsightForge</div>
-            <div style="font-size: 12px; color: #595959; margin-top: 2px;">BI Requirement Analysis</div>
+    <div class="logo-section">
+        <div class="logo-icon">⚡</div>
+        <div class="logo-text">insightForge</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Navigation
+    st.markdown("---")
+    
+    if st.button("🏠 Home", use_container_width=True, key="nav_home"):
+        st.session_state.page = "Home"
+    
+    if st.button("📊 Dashboard", use_container_width=True, key="nav_dashboard"):
+        st.session_state.page = "Dashboard"
+    
+    if st.button("🎨 Prototype", use_container_width=True, key="nav_prototype"):
+        st.session_state.page = "Prototype"
+    
+    if st.button("📄 Reports", use_container_width=True, key="nav_reports"):
+        st.session_state.page = "Reports"
+    
+    if st.button("🔍 Audit Trail", use_container_width=True, key="nav_audit"):
+        st.session_state.page = "Audit Trail"
+    
+    if st.button("⚙️ Settings", use_container_width=True, key="nav_settings"):
+        st.session_state.page = "Settings"
+    
+    # Divider
+    st.markdown("---")
+    
+    # Theme selector
+    st.markdown("**Theme**")
+    theme = st.selectbox("Select theme", ["Light", "Dark"], key="theme_selector")
+    
+    # System Status
+    st.markdown("**System Status**")
+    st.markdown("""
+    <div class="status-card">
+        <div class="status-item">
+            <span class="status-label">API Status</span>
+            <span class="status-value"><span class="status-indicator active"></span> Operational</span>
+        </div>
+        <div class="status-item">
+            <span class="status-label">Workflow</span>
+            <span class="status-value"><span class="status-indicator active"></span> Running</span>
+        </div>
+        <div class="status-item">
+            <span class="status-label">Database</span>
+            <span class="status-value"><span class="status-indicator active"></span> Connected</span>
         </div>
     </div>
     """, unsafe_allow_html=True)
-
-
-# ============================================================================
-# SIDEBAR SECTION
-# ============================================================================
-
-def render_sidebar() -> None:
-    """Render compact left navigation sidebar."""
-    with st.sidebar:
-        st.markdown("🔷 InsightForge", unsafe_allow_html=True)
-        st.divider()
-        
-        st.markdown("**Business Requirement**")
-        requirement = st.text_area(
-            "Requirement:",
-            value=st.session_state.business_requirement,
-            height=100,
-            placeholder="Example: Power BI Executive Sales Dashboard...",
-            key="requirement_input",
-            label_visibility="collapsed"
-        )
-        st.session_state.business_requirement = requirement
-
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("▶️ Start", use_container_width=True, key="start_btn"):
-                if not st.session_state.business_requirement.strip():
-                    set_error("Please enter a requirement")
-                else:
-                    try:
-                        st.session_state.workflow_started = True
-                        st.session_state.current_stage = "requirements"
-                        add_audit_event("System", "Workflow Started", "initiated")
-
-                        # Instantiate OrchestratorAgent and run pipeline
-                        from agents import orchestrator_agent
-                        orchestrator = orchestrator_agent.OrchestratorAgent()
-                        st.session_state.orchestrator_results = orchestrator.run_pipeline(st.session_state.business_requirement)
-                        
-                        result = st.session_state.orchestrator_results
-                        if result.get("status") == "Success":
-                            st.session_state.current_stage = "completed"
-                        else:
-                            st.session_state.current_stage = "requirements"
-                            #set_error("Pipeline failed. Please check the logs for details.")
-
-                        add_audit_event("OrchestratorAgent", "Pipeline Completed", "completed")
-                        set_success("Analysis completed!")
-                        st.rerun()
-                    except Exception as e:
-                        set_error(f"Pipeline error: {str(e)}")
-                        logger.exception("Pipeline execution failed")
-
-        with col2:
-            if st.button("🔄 Reset", use_container_width=True, key="reset_btn"):
-                reset_session()
-                set_success("Workflow reset")
-
-        st.divider()
-        st.markdown("**Status**")
-        
-        status_map = {
-            "idle": ("🔴", "Not Started"),
-            "requirements": ("🟡", "Requirements"),
-            "clarification": ("🟡", "Clarification"),
-            "prototype": ("🟡", "Prototype"),
-            "reporter": ("🟢", "Report"),
-            "completed": ("🟢", "Completed"),
-        }
-        status_color, status_text = status_map.get(st.session_state.current_stage, ("🔴", "Unknown"))
-        st.write(f"{status_color} {status_text}")
 
 
 # ============================================================================
@@ -1548,205 +1253,444 @@ def render_messages() -> None:
         st.session_state.success_message = None
 
 
-# ============================================================================
-# LANDING PAGE - HERO & FEATURES
-# ============================================================================
+# Main content
+render_messages()
 
-def render_landing_page() -> None:
-    """Render modern SaaS landing page with gradient background."""
-    # Hero Section with Gradient Background
+if st.session_state.page == "Home":
+    # Hero section
     st.markdown("""
-    <div style="
-        background: linear-gradient(135deg, #f0f6ff 0%, #e8f1ff 50%, #f0e8ff 100%);
-        padding: 80px 40px;
-        text-align: center;
-        border-radius: 0;
-        margin: -40px -40px 40px -40px;
-    ">
-        <div style="max-width: 900px; margin: 0 auto;">
-            <div style="font-size: 64px; margin-bottom: 20px; font-weight: 700; background: linear-gradient(135deg, #0078d4, #107c10); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
-                insightForge
-            </div>
-            <div style="font-size: 28px; font-weight: 600; color: #242424; margin-bottom: 16px;">
-                AI-Powered Business Intelligence Report Generator
-            </div>
-            <div style="font-size: 18px; color: #595959; margin-bottom: 40px; line-height: 1.6;">
-                Transform your business requirements into actionable insights.<br/>Generate prototypes, analyze data, and create executive-ready reports in minutes.
-            </div>
-            
-            <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
-                <div style="background: white; padding: 20px 32px; border-radius: 8px; border: 1px solid #e1e1e1; text-align: center; flex: 1; min-width: 200px; max-width: 250px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
-                    <div style="font-size: 28px; font-weight: 700; color: #0078d4; margin-bottom: 8px;">📊</div>
-                    <div style="font-size: 16px; font-weight: 600; color: #242424; margin-bottom: 4px;">Smart Analysis</div>
-                    <div style="font-size: 14px; color: #595959;">AI analyzes your requirements and identifies key insights</div>
-                </div>
-                
-                <div style="background: white; padding: 20px 32px; border-radius: 8px; border: 1px solid #e1e1e1; text-align: center; flex: 1; min-width: 200px; max-width: 250px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
-                    <div style="font-size: 28px; font-weight: 700; color: #107c10; margin-bottom: 8px;">🎨</div>
-                    <div style="font-size: 16px; font-weight: 600; color: #242424; margin-bottom: 4px;">Prototype Generation</div>
-                    <div style="font-size: 14px; color: #595959;">Auto-generate interactive dashboard prototypes</div>
-                </div>
-                
-                <div style="background: white; padding: 20px 32px; border-radius: 8px; border: 1px solid #e1e1e1; text-align: center; flex: 1; min-width: 200px; max-width: 250px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
-                    <div style="font-size: 28px; font-weight: 700; color: #d83b01; margin-bottom: 8px;">📋</div>
-                    <div style="font-size: 16px; font-weight: 600; color: #242424; margin-bottom: 4px;">Executive Reports</div>
-                    <div style="font-size: 14px; color: #595959;">Create comprehensive business intelligence reports</div>
-                </div>
-                
-                <div style="background: white; padding: 20px 32px; border-radius: 8px; border: 1px solid #e1e1e1; text-align: center; flex: 1; min-width: 200px; max-width: 250px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
-                    <div style="font-size: 28px; font-weight: 700; color: #005a9e; margin-bottom: 8px;">🔒</div>
-                    <div style="font-size: 16px; font-weight: 600; color: #242424; margin-bottom: 4px;">Enterprise Ready</div>
-                    <div style="font-size: 14px; color: #595959;">Audit trails, approvals, and enterprise-grade security</div>
-                </div>
-            </div>
+    <div class="hero">
+        <div class="hero-logo">⚡</div>
+        <div class="hero-title">insightForge</div>
+        <div class="hero-subtitle">AI-Powered Business Intelligence Report Generator</div>
+        <div class="hero-description">
+            Transform your business requirements into actionable insights.<br>
+            Generate prototypes, analyze data, and create executive-ready reports in minutes.
         </div>
     </div>
     """, unsafe_allow_html=True)
     
-    st.markdown("")
+    # Business Requirement Card
+    #st.markdown('<div class="card">', unsafe_allow_html=True)
     
-    # Business Requirement Card Section
-    st.markdown("""
-    <div style="max-width: 1000px; margin: 0 auto; padding: 0 20px;">
-        <div style="
-            background: linear-gradient(135deg, rgba(0, 82, 204, 0.08) 0%, rgba(0, 82, 204, 0.04) 100%);
-            border: 1px solid #e1e1e1;
-            border-radius: 16px;
-            padding: 40px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            margin-bottom: 40px;
-        ">
-            <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
-                <div style="font-size: 32px;">📝</div>
-                <div>
-                    <div style="font-size: 20px; font-weight: 700; color: #242424;">Business Requirement</div>
-                    <div style="font-size: 14px; color: #595959; margin-top: 4px;">Describe your business reporting need in detail. Our AI will help you create the perfect report.</div>
-                </div>
-            </div>
-    """, unsafe_allow_html=True)
-
-
-# ============================================================================
-# MAIN APPLICATION
-# ============================================================================
-
-def main() -> None:
-    """Main application entry point."""
-    # Initialize
-    apply_custom_css()
-    initialize_session()
-
-    # Sidebar
-    render_sidebar()
-
-    # Main content
-    render_messages()
-
-    if st.session_state.workflow_started:
-        render_header()
-        render_progress()
-
-        # Main content area
-        col_main, col_audit = st.columns([3, 1])
-
-        with col_main:
-            # Render panels based on orchestrator results
-            if st.session_state.orchestrator_results:
-                # Requirement Panel
-                if st.session_state.current_stage in ["requirements", "clarification", "prototype", "reporter", "completed"]:
-                    render_requirement_panel()
-
-                # Clarification Panel
-                if st.session_state.current_stage in ["clarification", "prototype", "reporter", "completed"]:
-                    render_clarification_panel()
-
-                # Prototype Panel
-                if st.session_state.current_stage in ["prototype", "reporter", "completed"]:
-                    render_prototype_panel()
-
-                # Report Panel
-                if st.session_state.current_stage in ["reporter", "completed"]:
-                    render_report_panel()
+    col1, col2 = st.columns([4, 1])
+    with col1:
+        st.markdown('<div class="card-title">📋 Business Requirement</div>', unsafe_allow_html=True)
+        st.markdown('<div class="card-subtitle">Describe your business reporting need in detail. Our AI will help you create the perfect report.</div>', unsafe_allow_html=True)
+    
+    with col2:
+        with st.expander("📚 Examples"):
+            st.markdown("""
+            - Dashboard to monitor sales performance across regions with KPIs
+            - Customer segmentation report with purchase behavior analysis
+            - Supply chain efficiency dashboard with inventory metrics
+            - Marketing campaign ROI analysis and performance tracking
+            """)
+    
+    # Text area
+    business_req = st.text_area(
+        label="Enter your business requirement",
+        value=st.session_state.business_requirement,
+        height=120,
+        placeholder="e.g., I need a dashboard to monitor sales performance across regions with KPIs for revenue, growth rate, top products, and monthly trends...",
+        key="requirement_input"
+    )
+    st.session_state.business_requirement = business_req
+    
+    # Start Analysis button
+    col1, col2, col3 = st.columns([2, 1, 2])
+    with col2:
+        if st.button("🚀 Start Analysis", use_container_width=True, key="start_analysis"):
+            st.write("1. Button clicked")
+            
+            if not st.session_state.business_requirement.strip():
+                set_error("Please enter a requirement")
             else:
-                st.info("Running analysis pipeline...")
-        
-        # Audit Trail Column
-        with col_audit:
-            render_audit_panel()
-    else:
-        # Landing Page
-        render_landing_page()
-        
-        # Business Requirement Input Section
-        requirement = st.text_area(
-            "Requirement:",
-            value=st.session_state.business_requirement,
-            height=120,
-            placeholder="e.g., I need a dashboard to monitor sales performance across regions with KPIs for revenue, growth rate, top products, and monthly trends...",
-            key="requirement_input",
-            label_visibility="collapsed"
-        )
-        st.session_state.business_requirement = requirement
-        
-        st.markdown("</div>", unsafe_allow_html=True)
-        
-        st.markdown("")
-        
-        # Action Buttons
-        col1, col2, col3 = st.columns([2, 1, 1])
-        with col1:
-            pass
-        with col2:
-            if st.button("▶️ Start Analysis", use_container_width=True, key="start_btn_landing"):
-                if not st.session_state.business_requirement.strip():
-                    set_error("Please enter a requirement")
-                else:
-                    try:
-                        st.session_state.workflow_started = True
+                st.write("2. Validation passed")
+                try:
+                    st.write("3. Entered Try Block")
+                    st.session_state.workflow_started = True
+                    st.session_state.current_stage = "requirements"
+                    add_audit_event("System", "Workflow Started", "initiated")
+
+                    st.write("4. About to import orchestrator_agent")
+                    # Instantiate OrchestratorAgent and run pipeline
+                    from agents.orchestrator_agent import OrchestratorAgent
+                    orchestrator = OrchestratorAgent()
+                    st.session_state.orchestrator_results = orchestrator.run_pipeline(st.session_state.business_requirement)
+                    st.write("5. Pipeline executed")
+
+                    result = st.session_state.orchestrator_results
+                    if result.get("status") == "Success":
+                        st.session_state.current_stage = "Completed"
+                    else:
                         st.session_state.current_stage = "requirements"
-                        add_audit_event("System", "Workflow Started", "initiated")
+                        #set_error("Pipeline failed. Please check the logs for details.")
 
-                        # Instantiate OrchestratorAgent and run pipeline
-                        from agents import orchestrator_agent
-                        orchestrator = orchestrator_agent.OrchestratorAgent()
-                        st.session_state.orchestrator_results = orchestrator.run_pipeline(st.session_state.business_requirement)
-                        
-                        result = st.session_state.orchestrator_results
-                        if result.get("status") == "Success":
-                            st.session_state.current_stage = "completed"
-                        else:
-                            st.session_state.current_stage = "requirements"
+                    add_audit_event("OrchestratorAgent", "Pipeline Completed", "completed")
+                    set_success("Analysis completed!")
 
-                        add_audit_event("OrchestratorAgent", "Pipeline Completed", "completed")
-                        set_success("Analysis completed!")
-                        st.rerun()
-                    except Exception as e:
-                        set_error(f"Pipeline error: {str(e)}")
-                        logger.exception("Pipeline execution failed")
-        
-        with col3:
-            if st.button("🔄 Reset", use_container_width=True, key="reset_btn_landing"):
-                reset_session()
-                set_success("Workflow reset")
-        
-        st.markdown("")
-        
-        # Security & Privacy Info
+                    st.write("✅ Analysis completed! Click the Dashboard tab from the left navigation panel to view the results.")
+
+                    st.session_state.analysis_complete = True
+                    st.session_state.page = "Dashboard"
+                    st.rerun()
+                except Exception as e:
+                    set_error(f"Pipeline error: {str(e)}")
+                    logger.exception("Pipeline execution failed")
+
+    
+    # Workflow Cards
+    st.markdown("---")
+    st.markdown("<h2 style='text-align: center; margin-bottom: 30px;'>Workflow Overview</h2>", unsafe_allow_html=True)
+    
+    col1, col2, col3, col4 = st.columns(4, gap="medium")
+    
+    with col1:
         st.markdown("""
-        <div style="
-            background: #fafafa;
-            border: 1px solid #e1e1e1;
-            border-radius: 8px;
-            padding: 16px;
-            text-align: center;
-            color: #595959;
-            font-size: 13px;
-            margin-top: 40px;
-        ">
-            🔒 Your data is secure and private. All processing happens in your secure environment.
+        <div class="workflow-card">
+            <div class="workflow-icon">🔍</div>
+            <div class="workflow-title">Smart Analysis</div>
+            <div class="card-subtitle" style="margin: 8px 0; font-size: 13px;">AI analyzes your requirements and identifies key insights</div>
+            <div class="workflow-status">Ready</div>
         </div>
         """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown("""
+        <div class="workflow-card">
+            <div class="workflow-icon">🎨</div>
+            <div class="workflow-title">Prototype Generation</div>
+            <div class="card-subtitle" style="margin: 8px 0; font-size: 13px;">Auto-generate interactive dashboard prototypes</div>
+            <div class="workflow-status">Ready</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown("""
+        <div class="workflow-card">
+            <div class="workflow-icon">📊</div>
+            <div class="workflow-title">Executive Reports</div>
+            <div class="card-subtitle" style="margin: 8px 0; font-size: 13px;">Create comprehensive business intelligence reports</div>
+            <div class="workflow-status">Ready</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown("""
+        <div class="workflow-card">
+            <div class="workflow-icon">🛡️</div>
+            <div class="workflow-title">Enterprise Ready</div>
+            <div class="card-subtitle" style="margin: 8px 0; font-size: 13px;">Audit trails, approvals, and enterprise-grade security</div>
+            <div class="workflow-status">Ready</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    # Security note
+    st.markdown("""
+    <div style='text-align: center; margin-top: 40px; padding: 20px; background: #f0f4ff; border-radius: 8px; color: #666; font-size: 14px;'>
+        🔒 Your data is secure and private. All processing happens in your secure environment.
+    </div>
+    """, unsafe_allow_html=True)
 
+elif st.session_state.page == "Dashboard":
+    st.markdown("## 📊 Dashboard")
 
-if __name__ == "__main__":
-    main()
+    render_progress()
+    
+    # Mock data
+    dates = pd.date_range(start='2024-01-01', end='2024-12-31', freq='D')
+    regions = (['North', 'South', 'East', 'West'] * (len(dates) // 4 + 1))[:len(dates)]
+    mock_data = pd.DataFrame({
+        'Date': dates,
+        'Revenue': [50000 + i*100 + (i%7)*5000 for i in range(len(dates))],
+        'Orders': [100 + i + (i%7)*20 for i in range(len(dates))],
+        'Region': regions
+    })
+    # KPI Cards
+    col1, col2, col3, col4 = st.columns(4, gap="small")
+    
+    with col1:
+        st.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-label">Total Revenue</div>
+            <div class="kpi-value">${mock_data['Revenue'].sum():,.0f}</div>
+            <div class="kpi-change">↑ 12.5% vs last period</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-label">Total Orders</div>
+            <div class="kpi-value">{mock_data['Orders'].sum():,.0f}</div>
+            <div class="kpi-change">↑ 8.2% vs last period</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-label">Avg Order Value</div>
+            <div class="kpi-value">${mock_data['Revenue'].sum() / mock_data['Orders'].sum():.0f}</div>
+            <div class="kpi-change">↑ 4.1% vs last period</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col4:
+        st.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-label">Growth Rate</div>
+            <div class="kpi-value">23.4%</div>
+            <div class="kpi-change">↑ 5.3% vs last period</div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    st.markdown("---")
+    
+    # Filters
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        date_range = st.date_input("Date Range", value=(mock_data['Date'].min(), mock_data['Date'].max()))
+    with col2:
+        regions = st.multiselect("Regions", ['North', 'South', 'East', 'West'], default=['North', 'South', 'East', 'West'])
+    with col3:
+        metric = st.selectbox("Metric", ['Revenue', 'Orders'])
+    
+    st.markdown("---")
+    
+    # Charts
+    col1, col2 = st.columns(2, gap="large")
+    
+    with col1:
+        # Line chart
+        fig_line = px.line(mock_data, x='Date', y='Revenue', title='Revenue Trend', markers=True)
+        fig_line.update_layout(height=400, template='plotly_white', hovermode='x unified')
+        st.plotly_chart(fig_line, use_container_width=True)
+    
+    with col2:
+        # Bar chart
+        region_data = pd.DataFrame({
+            'Region': ['North', 'South', 'East', 'West'],
+            'Revenue': [1500000, 1200000, 1800000, 1100000]
+        })
+        fig_bar = px.bar(region_data, x='Region', y='Revenue', title='Revenue by Region', color='Region')
+        fig_bar.update_layout(height=400, template='plotly_white', showlegend=False)
+        st.plotly_chart(fig_bar, use_container_width=True)
+    
+    col1, col2 = st.columns(2, gap="large")
+    
+    with col1:
+        # Pie chart
+        fig_pie = px.pie(region_data, values='Revenue', names='Region', title='Market Share by Region')
+        fig_pie.update_layout(height=400, template='plotly_white')
+        st.plotly_chart(fig_pie, use_container_width=True)
+    
+    with col2:
+        # Treemap
+        treemap_data = pd.DataFrame({
+            'Category': ['North', 'South', 'East', 'West'],
+            'Value': [1500000, 1200000, 1800000, 1100000],
+            'Parent': ['Total', 'Total', 'Total', 'Total']
+        })
+        fig_tree = px.treemap(treemap_data, labels='Category', parents='Parent', values='Value', title='Revenue Distribution')
+        fig_tree.update_layout(height=400)
+        st.plotly_chart(fig_tree, use_container_width=True)
+    
+    st.markdown("---")
+    
+    # Data table
+    st.markdown("### Data Table")
+    st.dataframe(mock_data.head(20), use_container_width=True)
+
+elif st.session_state.page == "Prototype":
+    st.markdown("## 🎨 Dashboard Prototype")
+    
+    st.markdown("""
+    <div class="card">
+        <div class="card-title">Generated Dashboard Prototype</div>
+        <div class="card-subtitle">This is your auto-generated interactive dashboard based on your requirements.</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Mock prototype visualization
+    dates = pd.date_range(start='2024-01-01', end='2024-03-31', freq='D')
+    prototype_data = pd.DataFrame({
+        'Date': dates,
+        'Metric1': [100 + i*0.5 + (i%7)*10 for i in range(len(dates))],
+        'Metric2': [80 + i*0.3 + (i%5)*15 for i in range(len(dates))]
+    })
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        fig = px.area(prototype_data, x='Date', y='Metric1', title='Prototype Metric 1')
+        fig.update_layout(height=400, template='plotly_white')
+        st.plotly_chart(fig, use_container_width=True)
+    
+    with col2:
+        fig = px.line(prototype_data, x='Date', y='Metric2', title='Prototype Metric 2', markers=True)
+        fig.update_layout(height=400, template='plotly_white')
+        st.plotly_chart(fig, use_container_width=True)
+    
+    st.markdown("---")
+    st.markdown("### Download Prototype")
+    
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.download_button(
+            label="📥 Download as JSON",
+            data=json.dumps({"prototype": "data"}, indent=2),
+            file_name="prototype.json",
+            mime="application/json"
+        )
+    
+    with col2:
+        st.download_button(
+            label="📥 Download as CSV",
+            data=prototype_data.to_csv(index=False),
+            file_name="prototype_data.csv",
+            mime="text/csv"
+        )
+
+elif st.session_state.page == "Reports":
+    st.markdown("## 📄 Reports")
+    
+    st.markdown("""
+    <div class="card">
+        <div class="card-title">Generated Reports</div>
+        <div class="card-subtitle">Your executive-ready reports are ready for download and sharing.</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Report items
+    reports = [
+        {"title": "Executive Summary Report", "date": "2024-12-19", "size": "2.4 MB"},
+        {"title": "Detailed Analysis Report", "date": "2024-12-19", "size": "5.1 MB"},
+        {"title": "Data Insights Report", "date": "2024-12-19", "size": "1.8 MB"},
+    ]
+    
+    for report in reports:
+        col1, col2, col3, col4 = st.columns([2, 1, 1, 1])
+        
+        with col1:
+            st.markdown(f"**{report['title']}**")
+            st.markdown(f"*Generated: {report['date']}*")
+        
+        with col2:
+            st.markdown(f"{report['size']}")
+        
+        with col3:
+            st.download_button("📥 PDF", data="", file_name=f"{report['title']}.pdf", key=f"pdf_{report['title']}")
+        
+        with col4:
+            st.download_button("📥 Excel", data="", file_name=f"{report['title']}.xlsx", key=f"xlsx_{report['title']}")
+        
+        st.markdown("---")
+
+elif st.session_state.page == "Audit Trail":
+    st.markdown("## 🔍 Audit Trail")
+    
+    st.markdown("""
+    <div class="card">
+        <div class="card-title">Event Timeline</div>
+        <div class="card-subtitle">Complete history of all actions and events in your analysis workflow.</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Mock audit events
+    now = datetime.now()
+    events = [
+        {"time": now - timedelta(minutes=5), "action": "Analysis Started", "user": "Admin User", "status": "Success"},
+        {"time": now - timedelta(minutes=10), "action": "Business Requirement Submitted", "user": "Admin User", "status": "Success"},
+        {"time": now - timedelta(minutes=15), "action": "Dashboard Prototype Generated", "user": "System", "status": "Success"},
+        {"time": now - timedelta(minutes=20), "action": "Report Generated", "user": "System", "status": "Success"},
+        {"time": now - timedelta(minutes=25), "action": "Report Approved", "user": "Manager", "status": "Success"},
+    ]
+    
+    st.markdown("""
+    <div class="timeline">
+    """, unsafe_allow_html=True)
+    
+    for event in events:
+        st.markdown(f"""
+        <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+                <div class="timeline-time">{event['time'].strftime('%Y-%m-%d %H:%M:%S')}</div>
+                <div class="timeline-message"><strong>{event['action']}</strong> by {event['user']}</div>
+                <div style="font-size: 12px; color: #10b981; margin-top: 4px;">✓ {event['status']}</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    st.markdown("</div>", unsafe_allow_html=True)
+
+elif st.session_state.page == "Settings":
+    st.markdown("## ⚙️ Settings")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("""
+        <div class="card">
+            <div class="card-title">Display Settings</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        theme = st.radio("Theme", ["Light", "Dark"], key="settings_theme")
+        language = st.selectbox("Language", ["English", "Spanish", "French", "German"])
+        
+        st.markdown("""
+        <div class="card">
+            <div class="card-title">Notifications</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.checkbox("Email Notifications", value=True)
+        st.checkbox("Report Alerts", value=True)
+        st.checkbox("System Updates", value=True)
+    
+    with col2:
+        st.markdown("""
+        <div class="card">
+            <div class="card-title">System Information</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown(f"""
+        <div class="status-card">
+            <div class="status-item">
+                <span class="status-label">Application Version</span>
+                <span class="status-value">1.0.0</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">API Status</span>
+                <span class="status-value"><span class="status-indicator active"></span> Operational</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Workflow Status</span>
+                <span class="status-value"><span class="status-indicator active"></span> Running</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Database</span>
+                <span class="status-value"><span class="status-indicator active"></span> Connected</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Last Updated</span>
+                <span class="status-value">{datetime.now().strftime('%Y-%m-%d %H:%M')}</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div class="card">
+            <div class="card-title">About insightForge</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        insightForge is an AI-powered business intelligence platform designed to transform business requirements into actionable insights.
+        
+        © 2024 insightForge. All rights reserved.
+        """)
