@@ -1,3 +1,4 @@
+# Use this to test the ouptut of individual agents in isolation. This is not the main app, but a test harness for development purposes.
 import os
 import sys
 
