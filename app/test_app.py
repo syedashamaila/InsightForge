@@ -13,6 +13,7 @@ from dataclasses import asdict
 from agents.clarification_agent import ClarificationAgent
 from agents.requirement_agent import RequirementAgent
 from agents.mockdata_agent import MockDataAgent
+from agents.prototype_agent import PrototypeAgent
 
 
 
@@ -60,8 +61,33 @@ def main():
             return
         
         # Mock Agents Section
-        mock_agent = MockDataAgent(requirement_context)
-        mock_output = mock_agent.generate_mock_data()
+        try:
+            with st.status("Running MockData Agent...", expanded=True) as status:
+                mock_agent = MockDataAgent(requirement_context)
+                mock_output = mock_agent.generate_mock_data()
+                status.update(label="MockData Agent Completed ✓", state="complete")
+        except Exception as e:
+            st.error(f"MockData Agent Error: {str(e)}")
+            return
+
+        # Prototype Agent Section
+        try:
+            with st.status("Running Prototype Agent...", expanded=True) as status:
+                prototype_agent = PrototypeAgent()
+                
+                prototype = prototype_agent.create_prototype(
+                    asdict(requirement_context) 
+                    if hasattr(requirement_context, '__dataclass_fields__') 
+                    else requirement_context,
+                    asdict(clarified_req) 
+                    if hasattr(clarified_req, '__dataclass_fields__') 
+                    else clarified_req,
+                    mock_output
+                )
+                status.update(label="Prototype Agent Completed ✓", state="complete")
+        except Exception as e:
+            st.error(f"Prototype Agent Error: {str(e)}")
+            return
 
         # Display Results
         st.subheader("Results")
@@ -79,6 +105,9 @@ def main():
         for table_name, df in mock_output["dataframes"].items():
             st.subheader(f"Mock Data for {table_name}")
             st.dataframe(df)
+
+        st.subheader("Prototype Agent Output")
+        st.expander("View Prototype Output", expanded=True).json(prototype)
 
 
 if __name__ == "__main__":

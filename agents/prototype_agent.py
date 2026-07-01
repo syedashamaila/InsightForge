@@ -30,6 +30,7 @@ class PrototypeState(BaseModel):
     messages: Annotated[list[BaseMessage], add] = Field(default_factory=list)
     structured_requirements: dict = Field(default_factory=dict)
     clarification_output: dict = Field(default_factory=dict)
+    mock_data_output: dict = Field(default_factory=dict)
     prototype_output: dict = Field(default_factory=dict)
     error: str = ""
 
@@ -84,28 +85,38 @@ def generate_mock_data(table_name: str, columns: list, num_rows: int = 12) -> di
     return mock_data
 
 
-def generate_prototype_json(requirements: dict, clarifications: dict) -> dict:
+def generate_prototype_json(requirements: dict, clarifications: dict, mock_data_output: dict) -> dict:
     """Generate comprehensive dashboard prototype JSON in Power BI Executive Dashboard style"""
     
     dashboard_title = requirements.get("dashboard_title", "Executive Analytics Dashboard")
     approved_metrics = clarifications.get("approved_metrics", [])
+
+    while len(approved_metrics) < 4:
+        approved_metrics.append({
+            "name": f"Metric {len(approved_metrics) + 1}",
+            "description": "Default KPI"
+        }
+    )
     
     # Generate mock tables and sample data
     mock_tables = []
     sample_data = []
     
-    for i, metric in enumerate(approved_metrics[:3]):
-        columns = [
-            {"name": "Date", "type": "date"},
-            {"name": "Region", "type": "string"},
-            {"name": "Category", "type": "string"},
-            {"name": metric.get("name", f"Metric_{i}"), "type": "currency"},
-            {"name": "Target", "type": "currency"},
-            {"name": "Performance", "type": "percentage"}
-        ]
-        table_data = generate_mock_data(f"Table_{i}", columns, 12)
-        mock_tables.append({"table_name": table_data["table_name"], "columns": columns})
-        sample_data.append(table_data)
+    dataframes = mock_data_output.get("dataframes", {})
+
+    for table_name, df in dataframes.items():
+        mock_tables.append(
+            {
+            "table_name": table_name,
+            "columns": list(df.columns)
+        }
+    )
+        sample_data.append(
+            {
+            "table_name": table_name,
+            "data": df.head(20).to_dict(orient="records")
+        }
+    )
     
     # Generate 4 KPI Cards for top row (from approved metrics)
     kpi_cards = []
@@ -423,7 +434,7 @@ async def prototype_node(state: PrototypeState) -> PrototypeState:
         clarifications = state.clarification_output
         
         # Generate prototype JSON
-        prototype = generate_prototype_json(requirements, clarifications)
+        prototype = generate_prototype_json(requirements, clarifications, state.mock_data_output)
         
         state.prototype_output = prototype
         logger.info("Prototype generation completed successfully")
@@ -449,13 +460,14 @@ def create_prototype_agent():
     return workflow.compile()
 
 
-async def run_prototype_agent(structured_requirements: dict, clarification_output: dict) -> dict:
+async def run_prototype_agent(structured_requirements: dict, clarification_output: dict, mock_data_output: dict) -> dict:
     """Execute the prototype agent"""
     agent = create_prototype_agent()
     
     initial_state = PrototypeState(
         structured_requirements=structured_requirements,
-        clarification_output=clarification_output
+        clarification_output=clarification_output,
+        mock_data_output=mock_data_output
     )
     
     final_state = await agent.ainvoke(initial_state)
@@ -481,9 +493,9 @@ class PrototypeAgent:
         """
         return await run_prototype_agent(requirement_json, clarification_result)
     
-    def create_prototype(self, requirement_result, clarification_result):
+    def create_prototype(self, requirement_result, clarification_result, mock_data_result):
         import asyncio
 
         return asyncio.run(
-            run_prototype_agent(requirement_result, clarification_result)
+            run_prototype_agent(requirement_result, clarification_result, mock_data_result)
         )
