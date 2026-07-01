@@ -14,12 +14,15 @@ from agents.clarification_agent import ClarificationAgent
 from agents.requirement_agent import RequirementAgent
 from agents.mockdata_agent import MockDataAgent
 from agents.prototype_agent import PrototypeAgent
+from agents.reporter_agent import ReporterAgent
 
 
 
 def main():
-    st.set_page_config(page_title="Agent Tester", layout="wide")
-    st.title("Clarification and Requirement Agent Tester")
+    st.set_page_config(page_title="InsightsForge", layout="wide")
+    st.title("InsightsForge")
+
+    
     
     # Input section
     st.subheader("Input Business Requirement")
@@ -89,6 +92,17 @@ def main():
             st.error(f"Prototype Agent Error: {str(e)}")
             return
 
+        # Reporter Agent Section
+                
+        try:
+            with st.status("Running Reporter Agent...", expanded=True) as status:
+                reporter_agent = ReporterAgent()
+                dashboard = reporter_agent.generate_dashboard(prototype, mock_output)
+                status.update(label="Reporter Agent Completed ✓", state="complete")
+        except Exception as e:
+            st.error(f"Reporter Agent Error: {str(e)}")
+            return
+        
         # Display Results
         st.subheader("Results")
         
@@ -109,6 +123,31 @@ def main():
         st.subheader("Prototype Agent Output")
         st.expander("View Prototype Output", expanded=True).json(prototype)
 
+        st.subheader("Reporter Agent Output")
+        st.subheader("Generated Dashboard")
+        st.title(dashboard.get("dashboard_title", "Dashboard"))
+        
 
+        for visual in dashboard.get("figures", []):
+           st.markdown(f"### {visual.get('title', visual.get('type', 'Visualization'))}")
+
+           if visual.get("type", "") == "KPI Card":
+               st.metric(
+                   visual.get("title", ""),
+                   visual.get("value", "")
+               )
+           elif visual.get("type", "") == "Table":
+                st.dataframe(
+                    visual.get("data", {}),
+                    use_container_width=True
+                )
+           else:
+               st.plotly_chart(
+                   visual["figure"],
+                   use_container_width=True,
+                   key=visual["visual_id"]
+               )
+        
+        
 if __name__ == "__main__":
     main()
