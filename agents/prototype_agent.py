@@ -3,6 +3,7 @@ Prototype Agent - Third stage in the workflow
 Generates dashboard prototypes using approved requirements and clarifications
 """
 
+from distro import name
 from langchain_core.messages import BaseMessage
 #from langchain_openai import ChatOpenAI
 from utils.llm_helper import get_llm
@@ -15,7 +16,7 @@ from operator import add
 import json
 import logging
 from datetime import datetime, timedelta
-import random
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -35,74 +36,62 @@ class PrototypeState(BaseModel):
     error: str = ""
 
 
-@tool
-def generate_mock_data(table_name: str, columns: list, num_rows: int = 12) -> dict:
-    """Generate realistic mock data for dashboard visualization"""
-    mock_data = {"table_name": table_name, "columns": columns, "data": []}
-    
-    # Dimension categories for realistic data
-    dimensions = ["Supplier A", "Supplier B", "Supplier C", "Supplier D", "Supplier E"]
-    regions = ["North", "South", "East", "West", "Central"]
-    categories = dimensions + regions
-    
-    # Generate 100-150 rows for realistic dashboard data
-    num_realistic_rows = min(max(num_rows, 100), 150)
-    start_date = datetime.now() - timedelta(days=num_realistic_rows - 1)
-    
-    for i in range(num_realistic_rows):
-        row = {}
-        current_date = start_date + timedelta(days=i)
-        
-        for col in columns:
-            col_name = col.get("name", "")
-            col_type = col.get("type", "string")
-            
-            if col_type.lower() == "date":
-                row[col_name] = current_date.strftime("%Y-%m-%d")
-            elif col_type.lower() == "integer":
-                # Generate realistic integer counts
-                row[col_name] = random.randint(50, 5000)
-            elif col_type.lower() == "float":
-                # Generate realistic float percentages
-                row[col_name] = round(random.uniform(70, 100), 2)
-            elif col_type.lower() == "currency":
-                # Generate realistic currency values in 100k-500k range
-                base_value = random.randint(100000, 500000)
-                # Add daily variation
-                variation = random.uniform(0.85, 1.15)
-                row[col_name] = round(base_value * variation, 2)
-            elif col_type.lower() == "string":
-                # Use realistic dimension values
-                row[col_name] = random.choice(categories)
-            elif col_type.lower() == "percentage":
-                # Generate percentage values between 70-100
-                row[col_name] = round(random.uniform(70, 100), 2)
-            else:
-                row[col_name] = "Sample Value"
-        
-        mock_data["data"].append(row)
-    
-    return mock_data
-
-
 def generate_prototype_json(requirements: dict, clarifications: dict, mock_data_output: dict) -> dict:
     """Generate comprehensive dashboard prototype JSON in Power BI Executive Dashboard style"""
     
     dashboard_title = requirements.get("dashboard_title", "Executive Analytics Dashboard")
-    approved_metrics = clarifications.get("approved_metrics", [])
 
+    print(mock_data_output["dataframes"])
+    print(type(mock_data_output["dataframes"]))
+
+    fact_table = next(
+        dataframe for table_name, dataframe in mock_data_output["dataframes"].items()
+          if 
+          str(table_name).lower().startswith("fact")
+    )
+    numeric_columns = [col for col in fact_table.select_dtypes(include=["number"]).columns if not col.lower().endswith("key")]
+
+    approved_metrics = []
+
+    for col in numeric_columns[:4]:  # Limit to first 4 numeric columns
+        approved_metrics.append({
+            "name": col,
+            "description": col
+        })
+
+    print("NUMERIC COLUMNS =", numeric_columns)
+    print("APPROVED METRICS =", approved_metrics)
+    
     while len(approved_metrics) < 4:
         approved_metrics.append({
-            "name": f"Metric {len(approved_metrics) + 1}",
-            "description": "Default KPI"
-        }
-    )
-    
+            "name": approved_metrics[-1]["name"]
+            if approved_metrics else "Value",
+            "description": "Generated KPI metric"
+        })
     # Generate mock tables and sample data
     mock_tables = []
     sample_data = []
     
     dataframes = mock_data_output.get("dataframes", {})
+
+    table_names = list(dataframes.keys())
+
+    print("TABLES =", table_names)
+    print("NUMERIC COLUMNS =", numeric_columns)
+
+    fact_table_name = next(
+        name for name in table_names 
+        if "fact" in name.lower()
+    )
+
+    dimension_table_names = [
+        name for name in table_names 
+        if "dim" in name.lower() or "dimension" in name.lower()
+    ]
+
+    fact_df = dataframes[fact_table_name]
+
+    numeric_columns = fact_df.select_dtypes(include=["number"]).columns.tolist()
 
     for table_name, df in dataframes.items():
         mock_tables.append(
@@ -133,7 +122,7 @@ def generate_prototype_json(requirements: dict, clarifications: dict, mock_data_
             "visual_id": kpi_id,
             "visual_type": "KPI Card",
             "title": metric.get("name", f"KPI {i+1}"),
-            "data_source": f"Table_{i % max(len(mock_tables), 1)}",
+            "data_source": fact_table_name,
             "x_axis": "Region",
             "y_axis": metric.get("name", "Value"),
             "business_justification": f"Key metric: {metric.get('description', 'Performance tracking')}. {metric.get('requirement', 'Supports business objectives.')}",
@@ -157,7 +146,7 @@ def generate_prototype_json(requirements: dict, clarifications: dict, mock_data_
         "visual_id": "visual_column_chart",
         "visual_type": "Column Chart",
         "title": f"{approved_metrics[0].get('name', 'Performance')} by Region",
-        "data_source": f"Table_0",
+        "data_source": fact_table_name,
         "x_axis": "Region",
         "y_axis": approved_metrics[0].get("name", "Value"),
         "business_justification": "Regional performance comparison enables identification of top and underperforming areas",
@@ -178,7 +167,7 @@ def generate_prototype_json(requirements: dict, clarifications: dict, mock_data_
         "visual_id": "visual_line_chart",
         "visual_type": "Line Chart",
         "title": f"{approved_metrics[1].get('name', 'Trend')} Over Time",
-        "data_source": f"Table_1",
+        "data_source": fact_table_name,
         "x_axis": "Date",
         "y_axis": approved_metrics[1].get("name", "Value"),
         "business_justification": "Time-series trend analysis provides insights into seasonal patterns and performance momentum",
@@ -203,7 +192,7 @@ def generate_prototype_json(requirements: dict, clarifications: dict, mock_data_
         "visual_id": "visual_treemap",
         "visual_type": "Treemap",
         "title": "Category Distribution",
-        "data_source": f"Table_{2 % max(len(mock_tables), 1)}",
+        "data_source": dimension_table_names[0] if len(dimension_table_names) > 0 else fact_table_name,
         "x_axis": "Category",
         "y_axis": "Performance",
         "business_justification": "Hierarchical view of category contribution and relative importance to overall performance",
@@ -224,7 +213,7 @@ def generate_prototype_json(requirements: dict, clarifications: dict, mock_data_
         "visual_id": "visual_pie_chart",
         "visual_type": "Pie Chart",
         "title": "Revenue Distribution by Supplier",
-        "data_source": f"Table_{1 % max(len(mock_tables), 1)}",
+        "data_source": dimension_table_names[1] if len(dimension_table_names) > 1 else fact_table_name,
         "x_axis": "Region",
         "y_axis": approved_metrics[0].get("name", "Value"),
         "business_justification": "Supplier/segment composition analysis for portfolio optimization decisions",
@@ -245,7 +234,7 @@ def generate_prototype_json(requirements: dict, clarifications: dict, mock_data_
         "visual_id": "visual_detail_table",
         "visual_type": "Table",
         "title": "Performance Details",
-        "data_source": "Table_0",
+        "data_source": fact_table_name,
         "x_axis": "Date",
         "y_axis": "Multiple Fields",
         "business_justification": "Comprehensive data table for detailed analysis, filtering, and exporting transaction-level insights",
@@ -424,7 +413,7 @@ def generate_prototype_json(requirements: dict, clarifications: dict, mock_data_
     
     return prototype_json
 
-
+import traceback
 async def prototype_node(state: PrototypeState) -> PrototypeState:
     """Main prototype generation node"""
     try:
@@ -440,6 +429,8 @@ async def prototype_node(state: PrototypeState) -> PrototypeState:
         logger.info("Prototype generation completed successfully")
         
     except Exception as e:
+        traceback.print_exc()
+        
         logger.error(f"Error in prototype generation: {str(e)}")
         state.error = str(e)
     
