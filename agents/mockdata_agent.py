@@ -45,6 +45,7 @@ class DataDictionaryEntry:
     datatype: str
     description: str
 
+from dataclasses import asdict
 
 class MockDataAgent:
     """
@@ -54,13 +55,17 @@ class MockDataAgent:
     maintaining referential integrity and realistic values.
     """
 
-    def __init__(self, requirement_context: Dict[str, Any]):
+    def __init__(self, requirement_context):
         """
         Initialize the MockDataAgent.
         
         Args:
             requirement_context: Dict containing dashboard requirements from RequirementAgent
         """
+        if not isinstance(requirement_context, dict):
+            requirement_context = asdict(requirement_context)
+            
+            
         self.requirement_context = requirement_context
         self.schema: Optional[SchemaDefinition] = None
         self.dataframes: Dict[str, pd.DataFrame] = {}
@@ -117,7 +122,7 @@ class MockDataAgent:
         schema.fact_tables = self.requirement_context.get("fact_tables", [])
         schema.dimension_tables = self.requirement_context.get("dimension_tables", [])
         schema.grain = self.requirement_context.get("grain", "Atomic level")
-        schema.dimensions = self.requirement_context.get("dimensions", {})
+        schema.dimensions = self.requirement_context.get("dimensions", [])
         schema.measures = self.requirement_context.get("measures", {})
         
         # Extract relationships from requirement context
@@ -232,7 +237,17 @@ class MockDataAgent:
         primary_key = self.schema.primary_keys.get(dim_table, "ID")
         
         # Get attributes from schema dimensions definition
-        attributes = self.schema.dimensions.get(dim_table, [])
+        attributes = []
+
+        if isinstance(self.schema.dimensions, dict):
+            attributes = self.schema.dimensions.get(dim_table, [])
+
+        elif isinstance(self.schema.dimensions, list):
+            for item in self.schema.dimensions:
+                if isinstance(item, dict) :
+                    if item.get("name") == dim_table or item.get("table") == dim_table:
+                        attributes = item.get("attributes", [])
+                        break
         
         # Determine row count (default: 100)
         row_count = self._get_dimension_row_count(dim_table)
@@ -358,14 +373,15 @@ class MockDataAgent:
                     data[rel.fact_column] = np.random.randint(1, max_fk_value + 1, row_count)
         
         # Add measures from schema
-        for measure_name, measure_type in self.schema.measures.items():
-            if measure_type.lower() in ['integer', 'int', 'count', 'quantity']:
-                data[measure_name] = np.random.randint(1, 100, row_count)
-            elif measure_type.lower() in ['decimal', 'float', 'amount', 'price']:
-                data[measure_name] = np.random.uniform(10, 500, row_count).round(2)
-            else:
-                # Default to float
-                data[measure_name] = np.random.uniform(1, 100, row_count).round(2)
+        if isinstance(self.schema.measures, dict):
+            for measure_name, measure_type in self.schema.measures.items():
+                if str(measure_type).lower() in ['integer', 'int', 'count', 'quantity']:
+                    data[measure_name] = np.random.randint(1, 100, row_count)
+                elif str(measure_type).lower() in ['decimal', 'float', 'amount', 'price']:
+                    data[measure_name] = np.random.uniform(10, 500, row_count).round(2)
+                else:
+                    # Default to float
+                    data[measure_name] = np.random.uniform(1, 100, row_count).round(2)
         
         df = pd.DataFrame(data)
         logger.info(f"Generated {fact_table} with {len(df)} rows and {len(df.columns)} columns")

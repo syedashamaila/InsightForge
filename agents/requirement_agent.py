@@ -1,8 +1,20 @@
+from dotenv import load_dotenv
+import os
+
+load_dotenv()  # Load environment variables from .env file
+
+api_key = os.getenv("GOOGLE_API_KEY")
+
+import google.generativeai as genai
+genai.configure(api_key=api_key)  # Configure the API key for Google Generative AI
+
 import json
 import logging
 from typing import Dict, List, Any
 from dataclasses import dataclass, asdict, field
 import google.generativeai as genai
+
+from agents.clarification_agent import ClarifiedRequirement
 
 # Configure logging
 logging.basicConfig(
@@ -69,7 +81,7 @@ class RequirementAgent:
         "success_criteria",
     }
 
-    def __init__(self, model_name: str = "gemini-1.5-flash") -> None:
+    def __init__(self, model_name: str = "gemini-2.5-flash") -> None:
         """
         Initialize the requirement agent.
 
@@ -80,12 +92,12 @@ class RequirementAgent:
         self.model_name = model_name
         self.specification: RequirementContext = RequirementContext()
 
-    def analyze_requirement(self, requirement: str) -> Dict[str, Any]:
+    def analyze_requirement(self, clarified_requirement: ClarifiedRequirement) -> Dict[str, Any]:
         """
         Convert natural language business requirement into structured specification using Gemini.
 
         Args:
-            requirement: Natural language business requirement string
+            clarified_requirement: Clarified business requirement object
 
         Returns:
             Dictionary containing structured BI specification
@@ -95,10 +107,10 @@ class RequirementAgent:
             Exception: For LLM or processing errors
         """
         try:
-            logger.info("Starting requirement analysis")
+            logger.info("Analyzing clarified requirement for domain: %s", clarified_requirement.business_domain)
             
-            self._validate_input(requirement)
-            prompt = self._build_prompt(requirement)
+            self._validate_input(clarified_requirement)
+            prompt = self._build_prompt(clarified_requirement)
             response_text = self._call_llm(prompt)
             parsed_response = self._parse_response(response_text)
             self._validate_response(parsed_response)
@@ -122,52 +134,56 @@ class RequirementAgent:
             logger.error(f"Unexpected error during requirement analysis: {str(ex)}")
             raise Exception(f"Failed to analyze requirement: {str(ex)}")
 
-    def _validate_input(self, requirement: str) -> None:
+    def _validate_input(self, clarified_requirement: ClarifiedRequirement) -> None:
         """
         Validate the input requirement.
 
         Args:
-            requirement: Natural language business requirement string
+            clarified_requirement: Clarified business requirement object
 
         Raises:
             ValueError: If requirement is empty or invalid type
         """
-        if not requirement or not isinstance(requirement, str):
-            raise ValueError("Requirement must be a non-empty string")
+        if not clarified_requirement or not isinstance(clarified_requirement, ClarifiedRequirement):
+            raise ValueError("Requirement must be a non-empty ClarifiedRequirement object")
         
-        if len(requirement.strip()) == 0:
+        if len(clarified_requirement.original_request.strip()) == 0:
             raise ValueError("Requirement cannot be only whitespace")
         
-        logger.debug(f"Input requirement validated (length: {len(requirement)})")
+        if not clarified_requirement.business_objective:
+            raise ValueError("Business objective is required")
+        
+        if not clarified_requirement.business_domain:
+            raise ValueError("Business domain is required")
+        
+        if not clarified_requirement.conversation_summary:
+            raise ValueError("Conversation summary is required")
+        
+        logger.debug(f"Input requirement validated (length: {len(clarified_requirement.original_request.strip())})")
 
-    def _build_prompt(self, requirement: str) -> str:
+    def _build_prompt(self, clarified_requirement: ClarifiedRequirement) -> str:
         """
         Build the prompt to send to Gemini.
 
         Args:
-            requirement: Natural language business requirement string
+            clarified_requirement: Clarified business requirement object
 
         Returns:
             Formatted prompt for Gemini
         """
         prompt = (
-            f"Analyze the following BI requirement and return a structured JSON specification:\n\n"
-            f"Determine:\n\n"
-            f"1. Business Objective\n"
-            f"2. Dashboard Title\n"
-            f"3. Intended User\n"
-            f"4. KPIs\n"
-            f"5. Measures\n"
-            f"6. Dimensions\n"
-            f"7. Filters\n"
-            f"8. Business Questions\n"
-            f"9. Fact Tables\n"
-            f"10. Dimension Tables\n"
-            f"11. Relationships\n"
-            f"12. Assumptions\n"
-            f"13. Success Criteria\n\n"
-            f"Infer responsible values when the user does not explicitly provide them"
-            f"{requirement}\n\n"
+            f"Here is an already clarified business requirement:\n\n"
+            f"Treat the following fields as authoritative:\n"
+            f"{clarified_requirement}\n\n"
+            f"Business Domain: {clarified_requirement.business_domain}\n"
+            f"Business Objective: {clarified_requirement.business_objective}\n"
+            f"Conversation Summary: {clarified_requirement.conversation_summary}\n\n"
+            f"Audience: {', '.join(clarified_requirement.audience)}\n"
+            f"Reporting Grain: {clarified_requirement.reporting_grain}\n\n"
+            f"Assumptions: {', '.join(clarified_requirement.assumptions) if clarified_requirement.assumptions else 'None'}\n\n"
+            f"DO NOT change them\n"
+            f"Your task is NOT to clarify\n"
+            f"Your task is to decompose this clarified requirement into a structured BI specification.\n"
             f"Return ONLY valid JSON (no markdown, no code blocks, no explanations) "
             f"with the following schema:\n"
             f"{{\n"
@@ -335,14 +351,14 @@ class RequirementAgent:
             raise
 
 
-def process_requirement(requirement: str) -> Dict[str, Any]:
+def process_requirement(clarified_requirement: ClarifiedRequirement) -> Dict[str, Any]:
     """
     Process a natural language BI requirement and return structured specification.
 
     This is the main entry point for requirement processing.
 
     Args:
-        requirement: Natural language business requirement
+        clarified_requirement: ClarifiedRequirement object containing the clarified requirement
 
     Returns:
         Dictionary containing structured BI specification
@@ -354,7 +370,7 @@ def process_requirement(requirement: str) -> Dict[str, Any]:
     try:
         logger.info("Processing requirement via process_requirement")
         agent = RequirementAgent()
-        return agent.analyze_requirement(requirement)
+        return agent.analyze_requirement(clarified_requirement)
     except Exception as ex:
         logger.error(f"Error in process_requirement: {str(ex)}")
         raise

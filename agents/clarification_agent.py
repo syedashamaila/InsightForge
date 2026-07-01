@@ -6,6 +6,22 @@ from typing import Optional, List, Dict, Any, Tuple
 from enum import Enum
 from pathlib import Path
 
+
+#==================================================================
+# Clarification Agent Configuration
+#==================================================================
+
+READY_CONFIDENCE_THRESHOLD = 70  # Confidence % above which we consider the requirement clarified
+NEEDS_CLARIFICATION_THRESHOLD = 40  # Confidence % below which we require user input
+
+FOLLOW_UP_CONFIDENCE_THRESHOLD = 80  # Confidence % below which we generate follow-up questions
+MAX_FOLLOW_UP_QUESTIONS = 3  # Limit the number of follow-up questions to avoid overwhelming the user
+
+MISSING_INFO_PENALTY = 15  # Confidence penalty for each missing information item
+AMBIGUITY_PENALTY = 10  # Confidence penalty for each ambiguity detected
+CONFLICT_PENALTY = 20  # Confidence penalty for each conflict detected
+ASSUMPTION_PENALTY = 5  # Confidence penalty for each assumption made    
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -48,6 +64,12 @@ class BusinessTerminology(Enum):
         # For now, return enum values
         return {cat.name: cat.value for cat in cls}
 
+class ClarificationStatus(Enum):
+    """Status of the clarification process."""
+    PENDING = "pending"
+    NEEDS_CLARIFICATION = "needs_clarification"
+    COMPLETE = "complete"
+    ERROR = "error"
 
 @dataclass
 class ConversationEntry:
@@ -145,7 +167,7 @@ class ClarificationResult:
     confidence_score: float = 0.0
     conversation_history: List[ConversationEntry] = field(default_factory=list)
     ready_for_requirement_agent: bool = False
-    status: str = "pending"  # pending, needs_clarification, complete, error
+    status: ClarificationStatus = ClarificationStatus.PENDING
     processing_timestamp: datetime = field(default_factory=datetime.now)
     
     def __post_init__(self):
@@ -154,9 +176,8 @@ class ClarificationResult:
             raise ValueError("clarified_requirement must be a ClarifiedRequirement instance")
         if not 0 <= self.confidence_score <= 100:
             raise ValueError("confidence_score must be between 0 and 100")
-        valid_statuses = {"pending", "needs_clarification", "complete", "error"}
-        if self.status not in valid_statuses:
-            raise ValueError(f"status must be one of {valid_statuses}")
+        if not isinstance(self.status, ClarificationStatus):
+            raise ValueError("status must be a ClarificationStatus enum")
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary representation."""
@@ -169,7 +190,7 @@ class ClarificationResult:
             "confidence_score": self.confidence_score,
             "conversation_history": [entry.to_dict() for entry in self.conversation_history],
             "ready_for_requirement_agent": self.ready_for_requirement_agent,
-            "status": self.status,
+            "status": self.status.value,
             "processing_timestamp": self.processing_timestamp.isoformat()
         }
 
@@ -270,7 +291,7 @@ class ClarificationAgent:
             # Step 8: Generate follow-up questions if needed (independent component for LLM replacement)
             follow_up_questions = []
             needs_input = False
-            if confidence < 80:
+            if confidence < FOLLOW_UP_CONFIDENCE_THRESHOLD:
                 follow_up_questions = self._generate_follow_up_questions(
                     normalized, missing_info, ambiguities
                 )
@@ -516,67 +537,7 @@ class ClarificationAgent:
         
         self.logger.debug("Using default grain: daily")
         return "daily"
-    
-    def _extract_kpis(self, text: str) -> List[str]:
-        """Extract KPIs mentioned in request."""
-        kpi_keywords = [
-            "revenue", "profit", "margin", "growth", "roi", "customer satisfaction",
-            "churn", "conversion", "click-through", "engagement", "retention",
-            "market share", "cost", "efficiency", "productivity"
-        ]
         
-        text_lower = text.lower()
-        kpis = [kpi for kpi in kpi_keywords if kpi in text_lower]
-        
-        self.logger.debug(f"Extracted KPIs: {kpis}")
-        return kpis
-    
-    def _extract_measures(self, text: str) -> List[str]:
-        """Extract measures (numeric fields) from request."""
-        measure_keywords = [
-            "sum", "count", "average", "min", "max", "total",
-            "amount", "quantity", "value", "sales", "revenue"
-        ]
-        
-        text_lower = text.lower()
-        measures = [m for m in measure_keywords if m in text_lower]
-        
-        self.logger.debug(f"Extracted measures: {measures}")
-        return measures
-    
-    def _extract_dimensions(self, text: str) -> List[str]:
-        """Extract dimensions (categorical fields) from request."""
-        dimension_keywords = [
-            "by product", "by date", "by region", "by customer",
-            "by department", "by category", "by month", "by year",
-            "by team", "by manager", "by status"
-        ]
-        
-        text_lower = text.lower()
-        dimensions = [d for d in dimension_keywords if d in text_lower]
-        
-        self.logger.debug(f"Extracted dimensions: {dimensions}")
-        return dimensions
-    
-    def _extract_filters(self, text: str) -> List[Dict[str, Any]]:
-        """Extract filters from request."""
-        filters = []
-        
-        filter_keywords = [
-            ("active", {"type": "status", "value": "active"}),
-            ("completed", {"type": "status", "value": "completed"}),
-            ("current year", {"type": "date", "value": "current_year"}),
-            ("last 12 months", {"type": "date", "value": "last_12_months"}),
-        ]
-        
-        text_lower = text.lower()
-        for keyword, filter_obj in filter_keywords:
-            if keyword in text_lower:
-                filters.append(filter_obj)
-        
-        self.logger.debug(f"Extracted filters: {filters}")
-        return filters
-    
     def _detect_missing_information(self, analysis: Dict[str, Any]) -> List[str]:
         """
         Detect missing business information.
@@ -864,8 +825,8 @@ class ClarificationAgent:
                 "(e.g., daily trends, monthly summaries)"
             )
         
-        # Limit to 3 questions maximum
-        questions = questions[:3]
+        # Limit to maximum follow-up questions
+        questions = questions[:MAX_FOLLOW_UP_QUESTIONS]
         
         self.logger.info(f"Generated {len(questions)} follow-up questions")
         return questions
@@ -874,7 +835,7 @@ class ClarificationAgent:
         self,
         user_request: str,
         analysis: Dict[str, Any],
-        follow_up_questions: List[str]
+        assumptions: List[str] = []
     ) -> str:
         """
         Generate a concise summary of the clarified conversation.
@@ -889,7 +850,7 @@ class ClarificationAgent:
         Args:
             user_request: Original request
             analysis: Analysis results
-            follow_up_questions: Questions asked
+            assumptions: List of assumptions made during clarification
             
         Returns:
             Conversation summary string
@@ -897,12 +858,14 @@ class ClarificationAgent:
         self.logger.info("Generating conversation summary...")
         
         summary = (
-            f"Business Domain: {analysis.get('business_domain', 'unspecified')}. "
-            f"Intent: {analysis.get('business_intent', 'analyze')}. "
-            f"Objective: {analysis.get('business_objective', 'unspecified')}. "
-            f"Audience: {', '.join(analysis.get('target_audience', ['unspecified']))}. "
-            f"Reporting Grain: {analysis.get('reporting_grain', 'unspecified')}."
+            f"The user wants to {analysis.get('business_intent', 'analyze').lower()} "
+            f"a {analysis.get('business_domain', 'general')} dashboard. "
+            f"The primary business objective is to {analysis.get('business_objective', 'analyze').lower()}. "
+            f"The intended audience is {', '.join(analysis.get('target_audience', ['general users']))}. "
+            f"The reporting grain is {analysis.get('reporting_grain', 'daily')}."
         )
+        if assumptions:
+            summary += ( f"The following assumptions were made during clarification: " + "; ".join(assumptions) + ".")
         
         self.logger.debug(f"Conversation summary: {summary}")
         return summary
@@ -945,7 +908,7 @@ class ClarificationAgent:
         
         # Generate conversation summary for downstream agent
         conversation_summary = self._generate_conversation_summary(
-            original_request, normalized, []
+            original_request, normalized, assumptions
         )
         
         requirement = ClarifiedRequirement(
@@ -995,17 +958,17 @@ class ClarificationAgent:
         confidence = 100.0
         
         # Deduct for missing business information
-        confidence -= len(missing_info) * 15
+        confidence -= len(missing_info) * MISSING_INFO_PENALTY
         
         # Deduct for ambiguities (these need clarification)
-        confidence -= len(ambiguities) * 10
+        confidence -= len(ambiguities) * AMBIGUITY_PENALTY
         
         # Deduct for conflicts (serious concern)
-        confidence -= len(conflicts) * 20
+        confidence -= len(conflicts) * CONFLICT_PENALTY
         
         # Deduct for assumptions (but less than missing info)
         # Assumptions are acceptable as long as acknowledged
-        confidence -= len(assumptions) * 5
+        confidence -= len(assumptions) * ASSUMPTION_PENALTY
         
         # Ensure confidence stays in valid range
         confidence = max(0, min(100, confidence))
@@ -1042,16 +1005,16 @@ class ClarificationAgent:
             status = "needs_clarification"
             ready = False
             self.logger.debug("Agent needs user input before proceeding")
-        elif confidence >= 70:
-            status = "complete"
+        elif confidence >= READY_CONFIDENCE_THRESHOLD:
+            status = ClarificationStatus.COMPLETE
             ready = True
             self.logger.debug("Clarification complete, ready for RequirementAgent")
-        elif confidence >= 40:
-            status = "needs_clarification"
+        elif confidence >= NEEDS_CLARIFICATION_THRESHOLD:
+            status = ClarificationStatus.NEEDS_CLARIFICATION
             ready = False
             self.logger.debug("Confidence acceptable but could benefit from clarification")
         else:
-            status = "error"
+            status = ClarificationStatus.ERROR
             ready = False
             self.logger.warning(f"Confidence too low ({confidence}%). Unable to clarify.")
         
