@@ -32,13 +32,17 @@ class RequirementContext:
     business_domain: str = ""
     target_users: List[str] = field(default_factory=list)
     kpis: List[str] = field(default_factory=list)
-    measures: List[str] = field(default_factory=list)
-    dimensions: List[str] = field(default_factory=list)
-    filters: List[str] = field(default_factory=list)
+
+    measures: List[Dict[str, Any]] = field(default_factory=list)
+    dimensions: List[Dict[str, Any]] = field(default_factory=list)
+    filters: List[Dict[str, Any]] = field(default_factory=list)
+
     business_questions: List[str] = field(default_factory=list)
-    fact_tables: List[str] = field(default_factory=list)
-    dimension_tables: List[str] = field(default_factory=list)
-    relationships: List[str] = field(default_factory=list)
+
+    fact_tables: List[Dict[str, Any]] = field(default_factory=list)
+    dimension_tables: List[Dict[str, Any]] = field(default_factory=list)
+    relationships: List[Dict[str, Any]] = field(default_factory=list)
+
     assumptions: List[str] = field(default_factory=list)
     success_criteria: List[str] = field(default_factory=list)
 
@@ -192,13 +196,13 @@ class RequirementAgent:
             f'  "business_domain": "",\n'
             f'  "target_users": [],\n'
             f'  "kpis": [],\n'
-            f'  "measures": [],\n'
-            f'  "dimensions": [],\n'
-            f'  "filters": [],\n'
+            f'  "measures": [{{"name": "", "definition": "", "format": ""}}],\n'
+            f'  "dimensions": [{{"name": "", "source_table": ""}}],\n'
+            f'  "filters": [{{"name": "", "type": ""}}],\n'
             f'  "business_questions": [],\n'
-            f'  "fact_tables": [],\n'
-            f'  "dimension_tables": [],\n'
-            f'  "relationships": [],\n'
+            f'  "fact_tables": [{{"name": "", "columns": []}}],\n'
+            f'  "dimension_tables": [{{"name": "", "columns": []}}],\n'
+            f'  "relationships": [{{"from_table": "", "from_column": "", "to_table": "", "to_column": "","type": ""}}],\n'
             f'  "assumptions": [],\n'
             f'  "success_criteria": []\n'
             f"}}"
@@ -326,11 +330,11 @@ class RequirementAgent:
             List of strings
         """
         if isinstance(value, list):
-            return [str(item) for item in value]
-        elif isinstance(value, str):
-            return [value] if value else []
-        else:
+            return value
+        elif value is None:
             return []
+        else:
+            return [value]
 
     def _convert_to_dict(self) -> Dict[str, Any]:
         """

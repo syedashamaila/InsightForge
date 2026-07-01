@@ -168,10 +168,13 @@ class MockDataAgent:
             primary_keys.update(context_pk)
         
         # Generate for any missing tables
-        for table in schema.fact_tables + schema.dimension_tables:
-            if table not in primary_keys:
+        for table_name in schema.fact_tables + schema.dimension_tables:
+            table_name = table_name.get("name")
+
+            if table_name and table_name not in primary_keys:
+                primary_keys[table_name] = self._generate_id_column_name(table_name)
                 # Default naming convention
-                primary_keys[table] = self._generate_id_column_name(table)
+                primary_keys[table_name] = self._generate_id_column_name(table_name)
         
         return primary_keys
     
@@ -203,13 +206,15 @@ class MockDataAgent:
         logger.info(f"Generating {len(self.schema.dimension_tables)} dimension tables")
         
         for dim_table in self.schema.dimension_tables:
+            dim_table_name = dim_table.get("name") 
+            
             # Check if custom data generator provided in context
-            custom_generator = self._get_custom_dimension_generator(dim_table)
+            custom_generator = self._get_custom_dimension_generator(dim_table_name)
             if custom_generator:
-                self.dataframes[dim_table] = custom_generator()
+                self.dataframes[dim_table_name] = custom_generator()
             else:
                 # Generate generic dimension table based on schema definition
-                self.dataframes[dim_table] = self._generate_generic_dimension(dim_table)
+                self.dataframes[dim_table_name] = self._generate_generic_dimension(dim_table)
     
     def _get_custom_dimension_generator(self, dim_table: str) -> Optional[Any]:
         """
@@ -224,42 +229,39 @@ class MockDataAgent:
         custom_generators = self.requirement_context.get("custom_dimension_generators", {})
         return custom_generators.get(dim_table)
     
-    def _generate_generic_dimension(self, dim_table: str) -> pd.DataFrame:
+    def _generate_generic_dimension(self, dim_table: dict) -> pd.DataFrame:
         """
         Generate a generic dimension table based on schema definition.
         
         Args:
-            dim_table: Dimension table name
+            dim_table: Dimension table definition dictionary
             
         Returns:
             Generated dimension DataFrame
         """
-        primary_key = self.schema.primary_keys.get(dim_table, "ID")
+        dim_table_name = dim_table["name"]
+        columns = dim_table.get("columns", [])
+
+        primary_key = self.schema.primary_keys.get(dim_table_name, "ID")
         
         # Get attributes from schema dimensions definition
-        attributes = []
-
-        if isinstance(self.schema.dimensions, dict):
-            attributes = self.schema.dimensions.get(dim_table, [])
-
-        elif isinstance(self.schema.dimensions, list):
-            for item in self.schema.dimensions:
-                if isinstance(item, dict) :
-                    if item.get("name") == dim_table or item.get("table") == dim_table:
-                        attributes = item.get("attributes", [])
-                        break
+        
         
         # Determine row count (default: 100)
-        row_count = self._get_dimension_row_count(dim_table)
+        row_count = self._get_dimension_row_count(dim_table_name)
         
         data = {primary_key: range(1, row_count + 1)}
         
         # Generate columns for each attribute
-        for attr in attributes:
-            data[attr] = self._generate_attribute_values(attr, row_count)
+        for column in columns:
+            if column.lower() == primary_key.lower():
+                continue  # Skip primary key column
+
+            data[column] = self._generate_attribute_values(column, row_count)
+                
         
         df = pd.DataFrame(data)
-        logger.info(f"Generated {dim_table} with {len(df)} rows and {len(df.columns)} columns")
+        logger.info(f"Generated {dim_table_name} with {len(df)} rows and {len(df.columns)} columns")
         return df
     
     def _get_dimension_row_count(self, dim_table: str) -> int:
@@ -325,13 +327,14 @@ class MockDataAgent:
         logger.info(f"Generating {len(self.schema.fact_tables)} fact tables")
         
         for fact_table in self.schema.fact_tables:
+            fact_table_name = fact_table["name"]
             # Check if custom data generator provided in context
-            custom_generator = self._get_custom_fact_generator(fact_table)
+            custom_generator = self._get_custom_fact_generator(fact_table_name)
             if custom_generator:
-                self.dataframes[fact_table] = custom_generator()
+                self.dataframes[fact_table_name] = custom_generator()
             else:
                 # Generate generic fact table based on schema definition
-                self.dataframes[fact_table] = self._generate_generic_fact_table(fact_table)
+                self.dataframes[fact_table_name] = self._generate_generic_fact_table(fact_table)
     
     def _get_custom_fact_generator(self, fact_table: str) -> Optional[Any]:
         """
@@ -344,44 +347,63 @@ class MockDataAgent:
             Custom generator function or None
         """
         custom_generators = self.requirement_context.get("custom_fact_generators", {})
-        return custom_generators.get(fact_table)
+
+        if isinstance(fact_table, dict):
+            fact_table_name = fact_table.get("name")
+        
+        else:
+            fact_table_name = fact_table
+
+        return custom_generators.get(fact_table_name)
     
-    def _generate_generic_fact_table(self, fact_table: str) -> pd.DataFrame:
+    def _generate_generic_fact_table(self, fact_table: dict) -> pd.DataFrame:
+
+        fact_table_name = fact_table["name"]
+        columns = fact_table.get("columns", [])
         """
         Generate a generic fact table based on schema definition and relationships.
         
         Args:
-            fact_table: Fact table name
+            fact_table: Fact table definition dictionary
             
         Returns:
             Generated fact DataFrame
         """
-        primary_key = self.schema.primary_keys.get(fact_table, "ID")
+        primary_key = self.schema.primary_keys.get(fact_table_name, "ID")
         
         # Determine row count (default: 1000)
         fact_sizes = self.requirement_context.get("fact_table_sizes", {})
-        row_count = fact_sizes.get(fact_table, 1000)
+        row_count = fact_sizes.get(fact_table_name, 1000)
         
         data = {primary_key: range(1, row_count + 1)}
+
+        for column in columns:
+            if column.lower() == primary_key.lower():
+                continue  # Skip primary key column
         
+            if column in data:
+                continue  # Skip if already generated (e.g., from relationships)
+
+            if "amount" in column.lower() or "sales" in column.lower() or "profit" in column.lower():
+                data[column] = np.random.uniform(100, 10000, row_count).round(2)
+
+            elif "quantity" in column.lower() or "count" in column.lower():
+                data[column] = np.random.randint(1, 100, row_count)
+
+            elif "key" in column.lower():
+                data[column] = np.random.randint(1, 100, row_count)
+
+            else:
+                data[column] = np.random.randint(1, 1000, row_count)
+
         # Add foreign key references from relationships
         for rel in self.schema.relationships:
-            if rel.fact_table == fact_table:
+            if rel.fact_table == fact_table_name:
                 dim_df = self.dataframes.get(rel.dimension_table)
                 if dim_df is not None and len(dim_df) > 0:
                     max_fk_value = len(dim_df)
                     data[rel.fact_column] = np.random.randint(1, max_fk_value + 1, row_count)
         
-        # Add measures from schema
-        if isinstance(self.schema.measures, dict):
-            for measure_name, measure_type in self.schema.measures.items():
-                if str(measure_type).lower() in ['integer', 'int', 'count', 'quantity']:
-                    data[measure_name] = np.random.randint(1, 100, row_count)
-                elif str(measure_type).lower() in ['decimal', 'float', 'amount', 'price']:
-                    data[measure_name] = np.random.uniform(10, 500, row_count).round(2)
-                else:
-                    # Default to float
-                    data[measure_name] = np.random.uniform(1, 100, row_count).round(2)
         
         df = pd.DataFrame(data)
         logger.info(f"Generated {fact_table} with {len(df)} rows and {len(df.columns)} columns")
@@ -399,13 +421,15 @@ class MockDataAgent:
         
         # Validate fact tables exist
         for fact_table in self.schema.fact_tables:
-            if fact_table not in self.dataframes:
-                validation_errors.append(f"Missing fact table: {fact_table}")
+            fact_table_name = fact_table["name"] if isinstance(fact_table, dict) else fact_table
+            if fact_table_name not in self.dataframes:
+                validation_errors.append(f"Missing fact table: {fact_table_name}")
         
         # Validate dimension tables exist
         for dim_table in self.schema.dimension_tables:
-            if dim_table not in self.dataframes:
-                validation_errors.append(f"Missing dimension table: {dim_table}")
+            dim_table_name = dim_table["name"] if isinstance(dim_table, dict) else dim_table
+            if dim_table_name not in self.dataframes:
+                validation_errors.append(f"Missing dimension table: {dim_table_name}")
         
         # Validate relationships and referential integrity
         for relationship in self.schema.relationships:
