@@ -518,7 +518,16 @@ def render_requirement_panel() -> None:
     if not st.session_state.orchestrator_results:
         return
     
+    st.write("Session Results")
+    st.write(st.session_state.orchestrator_results)
+
+    
+    
     requirement_result = st.session_state.orchestrator_results.get("requirement_result")
+
+    st.write("Requirement Result")
+    st.write(requirement_result)
+    
     if not requirement_result:
         return
 
@@ -1410,115 +1419,39 @@ elif st.session_state.page == "Dashboard":
     st.markdown("## 📊 Dashboard")
 
     render_progress()
-    
-    # Mock data
-    dates = pd.date_range(start='2024-01-01', end='2024-12-31', freq='D')
-    regions = (['North', 'South', 'East', 'West'] * (len(dates) // 4 + 1))[:len(dates)]
-    mock_data = pd.DataFrame({
-        'Date': dates,
-        'Revenue': [50000 + i*100 + (i%7)*5000 for i in range(len(dates))],
-        'Orders': [100 + i + (i%7)*20 for i in range(len(dates))],
-        'Region': regions
-    })
-    # KPI Cards
-    col1, col2, col3, col4 = st.columns(4, gap="small")
-    
-    with col1:
-        st.markdown(f"""
-        <div class="kpi-card">
-            <div class="kpi-label">Total Revenue</div>
-            <div class="kpi-value">${mock_data['Revenue'].sum():,.0f}</div>
-            <div class="kpi-change">↑ 12.5% vs last period</div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col2:
-        st.markdown(f"""
-        <div class="kpi-card">
-            <div class="kpi-label">Total Orders</div>
-            <div class="kpi-value">{mock_data['Orders'].sum():,.0f}</div>
-            <div class="kpi-change">↑ 8.2% vs last period</div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col3:
-        st.markdown(f"""
-        <div class="kpi-card">
-            <div class="kpi-label">Avg Order Value</div>
-            <div class="kpi-value">${mock_data['Revenue'].sum() / mock_data['Orders'].sum():.0f}</div>
-            <div class="kpi-change">↑ 4.1% vs last period</div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col4:
-        st.markdown(f"""
-        <div class="kpi-card">
-            <div class="kpi-label">Growth Rate</div>
-            <div class="kpi-value">23.4%</div>
-            <div class="kpi-change">↑ 5.3% vs last period</div>
-        </div>
-        """, unsafe_allow_html=True)
-    
+
+    # Main content area
+    col_main, col_audit = st.columns([3, 1])
+
+    with col_main:
+        # Render panels based on orchestrator results
+        if st.session_state.orchestrator_results:
+            # Requirement Panel
+            if st.session_state.current_stage in ["requirements", "clarification", "prototype", "reporter", "completed"]:
+                
+                render_requirement_panel()
+
+            # Clarification Panel
+            if st.session_state.current_stage in ["clarification", "prototype", "reporter", "completed"]:
+                render_clarification_panel()
+
+            # Prototype Panel
+            if st.session_state.current_stage in ["prototype", "reporter", "completed"]:
+                render_prototype_panel()
+
+            # Report Panel
+            if st.session_state.current_stage in ["reporter", "completed"]:
+                render_report_panel()
+        else:
+            st.info("Running analysis pipeline...")
+        
     st.markdown("---")
     
-    # Filters
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        date_range = st.date_input("Date Range", value=(mock_data['Date'].min(), mock_data['Date'].max()))
-    with col2:
-        regions = st.multiselect("Regions", ['North', 'South', 'East', 'West'], default=['North', 'South', 'East', 'West'])
-    with col3:
-        metric = st.selectbox("Metric", ['Revenue', 'Orders'])
-    
-    st.markdown("---")
-    
-    # Charts
-    col1, col2 = st.columns(2, gap="large")
-    
-    with col1:
-        # Line chart
-        fig_line = px.line(mock_data, x='Date', y='Revenue', title='Revenue Trend', markers=True)
-        fig_line.update_layout(height=400, template='plotly_white', hovermode='x unified')
-        st.plotly_chart(fig_line, use_container_width=True)
-    
-    with col2:
-        # Bar chart
-        region_data = pd.DataFrame({
-            'Region': ['North', 'South', 'East', 'West'],
-            'Revenue': [1500000, 1200000, 1800000, 1100000]
-        })
-        fig_bar = px.bar(region_data, x='Region', y='Revenue', title='Revenue by Region', color='Region')
-        fig_bar.update_layout(height=400, template='plotly_white', showlegend=False)
-        st.plotly_chart(fig_bar, use_container_width=True)
-    
-    col1, col2 = st.columns(2, gap="large")
-    
-    with col1:
-        # Pie chart
-        fig_pie = px.pie(region_data, values='Revenue', names='Region', title='Market Share by Region')
-        fig_pie.update_layout(height=400, template='plotly_white')
-        st.plotly_chart(fig_pie, use_container_width=True)
-    
-    with col2:
-        # Treemap
-        treemap_data = pd.DataFrame({
-            'Category': ['North', 'South', 'East', 'West'],
-            'Value': [1500000, 1200000, 1800000, 1100000],
-            'Parent': ['Total', 'Total', 'Total', 'Total']
-        })
-        fig_tree = px.treemap(treemap_data, labels='Category', parents='Parent', values='Value', title='Revenue Distribution')
-        fig_tree.update_layout(height=400)
-        st.plotly_chart(fig_tree, use_container_width=True)
-    
-    st.markdown("---")
-    
-    # Data table
-    st.markdown("### Data Table")
-    st.dataframe(mock_data.head(20), use_container_width=True)
+   
 
 elif st.session_state.page == "Prototype":
     st.markdown("## 🎨 Dashboard Prototype")
-    
+    render_prototype_panel()
     st.markdown("""
     <div class="card">
         <div class="card-title">Generated Dashboard Prototype</div>
@@ -1526,84 +1459,21 @@ elif st.session_state.page == "Prototype":
     </div>
     """, unsafe_allow_html=True)
     
-    # Mock prototype visualization
-    dates = pd.date_range(start='2024-01-01', end='2024-03-31', freq='D')
-    prototype_data = pd.DataFrame({
-        'Date': dates,
-        'Metric1': [100 + i*0.5 + (i%7)*10 for i in range(len(dates))],
-        'Metric2': [80 + i*0.3 + (i%5)*15 for i in range(len(dates))]
-    })
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        fig = px.area(prototype_data, x='Date', y='Metric1', title='Prototype Metric 1')
-        fig.update_layout(height=400, template='plotly_white')
-        st.plotly_chart(fig, use_container_width=True)
-    
-    with col2:
-        fig = px.line(prototype_data, x='Date', y='Metric2', title='Prototype Metric 2', markers=True)
-        fig.update_layout(height=400, template='plotly_white')
-        st.plotly_chart(fig, use_container_width=True)
     
     st.markdown("---")
-    st.markdown("### Download Prototype")
-    
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.download_button(
-            label="📥 Download as JSON",
-            data=json.dumps({"prototype": "data"}, indent=2),
-            file_name="prototype.json",
-            mime="application/json"
-        )
-    
-    with col2:
-        st.download_button(
-            label="📥 Download as CSV",
-            data=prototype_data.to_csv(index=False),
-            file_name="prototype_data.csv",
-            mime="text/csv"
-        )
+   
 
 elif st.session_state.page == "Reports":
     st.markdown("## 📄 Reports")
     
-    st.markdown("""
-    <div class="card">
-        <div class="card-title">Generated Reports</div>
-        <div class="card-subtitle">Your executive-ready reports are ready for download and sharing.</div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Report items
-    reports = [
-        {"title": "Executive Summary Report", "date": "2024-12-19", "size": "2.4 MB"},
-        {"title": "Detailed Analysis Report", "date": "2024-12-19", "size": "5.1 MB"},
-        {"title": "Data Insights Report", "date": "2024-12-19", "size": "1.8 MB"},
-    ]
-    
-    for report in reports:
-        col1, col2, col3, col4 = st.columns([2, 1, 1, 1])
-        
-        with col1:
-            st.markdown(f"**{report['title']}**")
-            st.markdown(f"*Generated: {report['date']}*")
-        
-        with col2:
-            st.markdown(f"{report['size']}")
-        
-        with col3:
-            st.download_button("📥 PDF", data="", file_name=f"{report['title']}.pdf", key=f"pdf_{report['title']}")
-        
-        with col4:
-            st.download_button("📥 Excel", data="", file_name=f"{report['title']}.xlsx", key=f"xlsx_{report['title']}")
-        
-        st.markdown("---")
+    render_report_panel()
+
+    st.markdown("---")
 
 elif st.session_state.page == "Audit Trail":
     st.markdown("## 🔍 Audit Trail")
-    
+    render_audit_panel()
+
     st.markdown("""
     <div class="card">
         <div class="card-title">Event Timeline</div>
@@ -1611,31 +1481,6 @@ elif st.session_state.page == "Audit Trail":
     </div>
     """, unsafe_allow_html=True)
     
-    # Mock audit events
-    now = datetime.now()
-    events = [
-        {"time": now - timedelta(minutes=5), "action": "Analysis Started", "user": "Admin User", "status": "Success"},
-        {"time": now - timedelta(minutes=10), "action": "Business Requirement Submitted", "user": "Admin User", "status": "Success"},
-        {"time": now - timedelta(minutes=15), "action": "Dashboard Prototype Generated", "user": "System", "status": "Success"},
-        {"time": now - timedelta(minutes=20), "action": "Report Generated", "user": "System", "status": "Success"},
-        {"time": now - timedelta(minutes=25), "action": "Report Approved", "user": "Manager", "status": "Success"},
-    ]
-    
-    st.markdown("""
-    <div class="timeline">
-    """, unsafe_allow_html=True)
-    
-    for event in events:
-        st.markdown(f"""
-        <div class="timeline-item">
-            <div class="timeline-dot"></div>
-            <div class="timeline-content">
-                <div class="timeline-time">{event['time'].strftime('%Y-%m-%d %H:%M:%S')}</div>
-                <div class="timeline-message"><strong>{event['action']}</strong> by {event['user']}</div>
-                <div style="font-size: 12px; color: #10b981; margin-top: 4px;">✓ {event['status']}</div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
     
     st.markdown("</div>", unsafe_allow_html=True)
 

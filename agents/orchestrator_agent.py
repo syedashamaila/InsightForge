@@ -86,8 +86,10 @@ class OrchestratorAgent:
         return logger
 
     def run_pipeline(
+        
         self, business_requirement: str, business_context: str = ""
     ) -> Dict[str, Any]:
+        print("1. Starting run_pipeline")
         """Execute the complete BI requirement analysis pipeline.
 
         Orchestrates sequential execution of requirement analysis, clarification,
@@ -119,21 +121,25 @@ class OrchestratorAgent:
             self.logger.info("Pipeline Started")
             self.agent_trace.start_pipeline(run_id)
 
+            print("2. Executing RequirementAgent")
             # Step 2: Execute RequirementAgent
             requirement_result = self._execute_requirement_agent(
                 run_id, business_requirement, business_context
             )
 
+            print("3. Executing ClarificationAgent")
             # Step 3: Execute ClarificationAgent
             clarification_result = self._execute_clarification_agent(
                 run_id, requirement_result
             )
 
+            print("4. Executing PrototypeAgent")
             # Step 4: Execute PrototypeAgent
             prototype_result = self._execute_prototype_agent(
                 run_id, requirement_result, clarification_result
             )
 
+            print("5. Executing ReporterAgent")
             # Step 5: Execute ReporterAgent
             report_result = self._execute_reporter_agent(
                 run_id, requirement_result, clarification_result, prototype_result
@@ -144,6 +150,7 @@ class OrchestratorAgent:
             self.agent_trace.complete_pipeline(run_id, execution_time)
             self.logger.info("Pipeline Finished")
 
+            print("6. Pipeline executed successfully")
             return {
                 "run_id": run_id,
                 "status": "Success",

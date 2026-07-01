@@ -1,250 +1,360 @@
 import json
 import logging
-from typing import Optional
-from langchain_core.messages import HumanMessage
+from typing import Dict, List, Any
+from dataclasses import dataclass, asdict, field
+import google.generativeai as genai
 
-from utils.llm_helper import get_llm
-from utils.agent_trace import AgentTrace
-
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class RequirementContext:
+    """Data class for BI requirement context."""
+    dashboard_title: str = ""
+    business_objective: str = ""
+    business_domain: str = ""
+    target_users: List[str] = field(default_factory=list)
+    kpis: List[str] = field(default_factory=list)
+    measures: List[str] = field(default_factory=list)
+    dimensions: List[str] = field(default_factory=list)
+    filters: List[str] = field(default_factory=list)
+    business_questions: List[str] = field(default_factory=list)
+    fact_tables: List[str] = field(default_factory=list)
+    dimension_tables: List[str] = field(default_factory=list)
+    relationships: List[str] = field(default_factory=list)
+    assumptions: List[str] = field(default_factory=list)
+    success_criteria: List[str] = field(default_factory=list)
 
 
 class RequirementAgent:
     """
-    First step of the workflow - converts business requirements into structured understanding.
-    Acts as a senior Power BI business analyst gathering reporting requirements before development.
+    AI-powered agent for converting natural language BI requirements
+    into structured business intelligence specifications using Gemini.
     """
 
-    def __init__(self):
-        """Initialize the requirement agent with LLM and tracing."""
-        self.llm = get_llm()
-        self.trace = AgentTrace()
+    SYSTEM_PROMPT = (
+        "You are a Senior Business Intelligence Solution Architect with extensive experience "
+        "in Power BI, Microsoft Fabric, Azure, SQL, dimensional modeling, data warehousing, "
+        "dashboard design and business analysis.\n"
+        "Your responsibility is to analyze business reporting requirements and convert them "
+        "into structured BI specifications.\n"
+        "You MUST respond ONLY a valid JSON object.\n"
+        "Do not write markdown, explanations, or any text outside the JSON object.\n"
+        "Do not use ```json.\n"
+        "The first character of your response must be '{' and the last character must be '}'.\n"
+        "Do not include markdown.\n"
+        "Do not explain your reasoning.\n"
+        "Do not wrap the response inside code blocks."
+    )
 
-    def _get_system_prompt(self) -> str:
-        """Return the system prompt for the requirement analyst."""
-        return """You are a senior Power BI business analyst with 10+ years of experience gathering and structuring reporting requirements.
+    REQUIRED_FIELDS = {
+        "dashboard_title",
+        "business_objective",
+        "business_domain",
+        "target_users",
+        "kpis",
+        "measures",
+        "dimensions",
+        "filters",
+        "business_questions",
+        "fact_tables",
+        "dimension_tables",
+        "relationships",
+        "assumptions",
+        "success_criteria",
+    }
 
-Your role is to analyze raw business requirements and convert them into a structured, comprehensive understanding before any prototype or development begins.
-
-When analyzing a business requirement, you MUST extract and structure the following information:
-
-1. **business_objective**: The primary goal or objective the requirement aims to achieve
-2. **problem_statement**: The specific problem or gap being addressed
-3. **target_users**: Identified user personas or roles who will use the report/dashboard
-4. **kpis**: Return as an array of objects with name, target, and description for each KPI. Example: "kpis":[{"name":"Total Suppliers", "target":"1000", "description":"Total number of suppliers in the system"},{"name":"On-Time Delivery Rate", "target":"95%", "description":"Percentage of deliveries made on time"}]
-5. **measures**: Quantitative metrics to be calculated or tracked
-6. **dimensions**: Qualitative attributes for grouping/filtering (e.g., time, geography, department)
-7. **filters**: Specific filters or slicers required for user interaction
-8. **expected_visuals**: Recommended visualization types (e.g., charts, tables, maps)
-9. **drill_down_expectations**: Expected drill-down hierarchies or navigation paths
-10. **assumptions**: Assumptions made about data availability, accuracy, or business context
-11. **dependencies**: External dependencies (systems, data sources, teams)
-12. **missing_information**: Information gaps or unknowns that need clarification
-13. **ambiguity_list**: Ambiguous statements or requirements that need clarification
-14. **risks**: Identified risks or concerns related to this requirement
-15. **acceptance_criteria**: Criteria by which success will be measured
-
-IMPORTANT:
-- Do NOT attempt to create SQL, DAX, semantic models, or Power BI files
-- Do NOT create mock data or sample datasets
-- Your ONLY responsibility is understanding and structuring the requirement
-- Return output as valid JSON only
-- If certain fields cannot be determined from the requirement, set them to empty strings
-- Provide clear, actionable, and business-focused descriptions
-- Flag any ambiguities or missing information for clarification
-
-Return ONLY a valid JSON object that EXACTLY mathces the following structure:
-
-{
-    "business_objective": "",
-    "problem_statement": "",
-    "target_users": [],
-    "kpis": [
-        {
-            "name": "",
-            "target": "",
-            "description": ""
-        }
-    ],
-    "measures": [],
-    "dimensions": [],
-    "filters": [],
-    "expected_visuals": [],
-    "drill_down_expectations": [],
-    "assumptions": [],
-    "dependencies": [],
-    "missing_information": [],
-    "ambiguity_list": [],
-    "risks": [],
-    "acceptance_criteria": []
-}
-
-Rules:
-Return ONLY valid JSON.
-Do not include markdown.
-Do not include explainations.
-KPIs MUST be an array of JSON objects with name, target, and description.
-Every KPI object must contain "name", "target", and "description".
-If information is unavailable, return an empty array[] as appropriate.
-
-IMPORTANT
-
-- The response MUST strictly follow the JSON structure.
-- Do NOT return arrays of strings for KPIs.
-- KPIs must aleays be objects with name, target, and description.
-- Return valid JSON only
-
-
-"""
-
-    def analyze(self, business_requirement: str, business_context: str = "") -> dict:
+    def __init__(self, model_name: str = "gemini-1.5-flash") -> None:
         """
-        Public method to analyze a business requirement.
-        
+        Initialize the requirement agent.
+
         Args:
-            business_requirement: The raw business requirement in natural language
-            business_context: Optional additional context about the business environment
-            
-        Returns:
-            Dictionary containing structured requirement analysis as JSON
+            model_name: Gemini model name to use for analysis
         """
-        return self.analyze_requirement(business_requirement, business_context)
+        logger.info(f"Initializing RequirementAgent with model: {model_name}")
+        self.model_name = model_name
+        self.specification: RequirementContext = RequirementContext()
 
-
-    def analyze_requirement(
-        self,
-        business_requirement: str,
-        business_context: str = ""
-    ) -> dict:
+    def analyze_requirement(self, requirement: str) -> Dict[str, Any]:
         """
-        Analyze a business requirement and extract structured understanding.
-        
+        Convert natural language business requirement into structured specification using Gemini.
+
         Args:
-            business_requirement: The raw business requirement in natural language
-            business_context: Optional additional context about the business environment
-            
+            requirement: Natural language business requirement string
+
         Returns:
-            Dictionary containing structured requirement analysis as JSON
-            
+            Dictionary containing structured BI specification
+
         Raises:
-            ValueError: If LLM response is invalid or cannot be parsed
-            Exception: For other processing errors
+            ValueError: If requirement is invalid
+            Exception: For LLM or processing errors
         """
         try:
-            self.trace.start_operation("analyze_requirement")
-            logger.info(f"Starting requirement analysis")
+            logger.info("Starting requirement analysis")
             
-            # Build the user message
-            user_message = business_requirement
-            if business_context:
-                user_message = f"""Business Context:
-{business_context}
+            self._validate_input(requirement)
+            prompt = self._build_prompt(requirement)
+            response_text = self._call_llm(prompt)
+            parsed_response = self._parse_response(response_text)
+            self._validate_response(parsed_response)
+            self._populate_dataclass(parsed_response)
+            
+            result = self._convert_to_dict()
 
-Business Requirement:
-{business_requirement}"""
+            logger.info("Requirement analysis completed successfully")
+            logger.debug(result)
 
-            self.trace.log_input({
-                "business_requirement": business_requirement,
-                "business_context": business_context
-            })
+            return result
+            
 
-            # Create messages for the LLM
-            messages = [
-                HumanMessage(
-                    content=f"""
-                    {self._get_system_prompt()}
-                    {user_message}
-                    """
-                    )
-                ]
+        except ValueError as ve:
+            logger.error(f"Validation error: {str(ve)}")
+            raise
+        except json.JSONDecodeError as je:
+            logger.error(f"JSON parsing error: {str(je)}")
+            raise Exception(f"Failed to parse LLM response as JSON: {str(je)}")
+        except Exception as ex:
+            logger.error(f"Unexpected error during requirement analysis: {str(ex)}")
+            raise Exception(f"Failed to analyze requirement: {str(ex)}")
 
+    def _validate_input(self, requirement: str) -> None:
+        """
+        Validate the input requirement.
 
-            # Call the LLM with system prompt
-            response = self.llm.invoke(messages)
+        Args:
+            requirement: Natural language business requirement string
 
-            # Extract the response content
-            response_text = response.content.strip()
-            self.trace.log_output({"raw_response": response_text})
+        Raises:
+            ValueError: If requirement is empty or invalid type
+        """
+        if not requirement or not isinstance(requirement, str):
+            raise ValueError("Requirement must be a non-empty string")
+        
+        if len(requirement.strip()) == 0:
+            raise ValueError("Requirement cannot be only whitespace")
+        
+        logger.debug(f"Input requirement validated (length: {len(requirement)})")
 
-            # Parse JSON response
-            try:
-                result = json.loads(response_text)
+    def _build_prompt(self, requirement: str) -> str:
+        """
+        Build the prompt to send to Gemini.
 
-                print("===============================================================")
-                print(result["kpis"])
-                print(type(result["kpis"]))
+        Args:
+            requirement: Natural language business requirement string
 
-                for k in result["kpis"]:
-                    print(k)
-                    print(type(k))
-                
-                print("=============================================================== ")
+        Returns:
+            Formatted prompt for Gemini
+        """
+        prompt = (
+            f"Analyze the following BI requirement and return a structured JSON specification:\n\n"
+            f"Determine:\n\n"
+            f"1. Business Objective\n"
+            f"2. Dashboard Title\n"
+            f"3. Intended User\n"
+            f"4. KPIs\n"
+            f"5. Measures\n"
+            f"6. Dimensions\n"
+            f"7. Filters\n"
+            f"8. Business Questions\n"
+            f"9. Fact Tables\n"
+            f"10. Dimension Tables\n"
+            f"11. Relationships\n"
+            f"12. Assumptions\n"
+            f"13. Success Criteria\n\n"
+            f"Infer responsible values when the user does not explicitly provide them"
+            f"{requirement}\n\n"
+            f"Return ONLY valid JSON (no markdown, no code blocks, no explanations) "
+            f"with the following schema:\n"
+            f"{{\n"
+            f'  "dashboard_title": "",\n'
+            f'  "business_objective": "",\n'
+            f'  "business_domain": "",\n'
+            f'  "target_users": [],\n'
+            f'  "kpis": [],\n'
+            f'  "measures": [],\n'
+            f'  "dimensions": [],\n'
+            f'  "filters": [],\n'
+            f'  "business_questions": [],\n'
+            f'  "fact_tables": [],\n'
+            f'  "dimension_tables": [],\n'
+            f'  "relationships": [],\n'
+            f'  "assumptions": [],\n'
+            f'  "success_criteria": []\n'
+            f"}}"
+           
+        )
+        logger.debug("Prompt built successfully")
+        return prompt
 
-            except json.JSONDecodeError as e:
-                logger.error(f"Failed to parse LLM response as JSON: {e}")
-                # Try to extract JSON from the response if it contains extra text
-                import re
-                json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
-                if json_match:
-                    result = json.loads(json_match.group())
-                else:
-                    raise ValueError(f"LLM response is not valid JSON: {response_text}")
+    def _call_llm(self, prompt: str) -> str:
+        """
+        Call the Gemini LLM with the given prompt.
 
-            # Validate required fields
-            required_fields = [
-                "business_objective", "problem_statement", "target_users",
-                "kpis", "measures", "dimensions", "filters", "expected_visuals",
-                "drill_down_expectations", "assumptions", "dependencies",
-                "missing_information", "ambiguity_list", "risks", "acceptance_criteria"
-            ]
+        Args:
+            prompt: The prompt to send to Gemini
 
-            for field in required_fields:
-                if field not in result:
-                    result[field] = ""
-                    logger.warning(f"Field '{field}' missing from LLM response, set to empty string")
+        Returns:
+            Response text from Gemini
 
-            self.trace.end_operation(
-                status="success",
-                output_summary={
-                    "has_kpis": bool(result.get("kpis")),
-                    "has_ambiguities": bool(result.get("ambiguity_list")),
-                    "has_risks": bool(result.get("risks")),
-                    "missing_info_count": len(str(result.get("missing_information", "")).split(","))
+        Raises:
+            Exception: If LLM call fails
+        """
+        try:
+            logger.debug(f"Calling Gemini model: {self.model_name}")
+            model = genai.GenerativeModel(
+                model_name=self.model_name,
+                system_instruction=self.SYSTEM_PROMPT
+            )
+            response = model.generate_content(
+                prompt,
+                generation_config={
+                    "temperature": 0.2,
+                    "response_mime_type": "application/json",
                 }
             )
 
-            logger.info("Requirement analysis completed successfully")
-            return result
+            response_text = response.text.strip()
+            logger.debug("LLM call completed successfully")
+            return response_text
+        except Exception as ex:
+            logger.error(f"Error calling LLM: {str(ex)}")
+            raise Exception(f"Failed to call Gemini LLM: {str(ex)}")
 
-        except Exception as e:
-            logger.error(f"Error during requirement analysis: {str(e)}", exc_info=True)
-            self.trace.end_operation(
-                status="error",
-                error=str(e)
+    def _parse_response(self, response_text: str) -> Dict[str, Any]:
+        """
+        Parse the JSON response from Gemini.
+
+        Args:
+            response_text: Raw response text from Gemini
+
+        Returns:
+            Parsed JSON as dictionary
+
+        Raises:
+            json.JSONDecodeError: If response is not valid JSON
+        """
+        try:
+            parsed = json.loads(response_text)
+            logger.debug("Response parsed successfully as JSON")
+            return parsed
+        except json.JSONDecodeError as je:
+            logger.error(f"Invalid JSON in LLM response: {response_text[:200]}")
+            raise
+
+    def _validate_response(self, response: Dict[str, Any]) -> None:
+        """
+        Validate that all required fields are present in the response.
+
+        Args:
+            response: Parsed JSON response from Gemini
+
+        Raises:
+            ValueError: If required fields are missing
+        """
+        missing_fields = self.REQUIRED_FIELDS - set(response.keys())
+        if missing_fields:
+            logger.warning(f"Missing fields in LLM response: {missing_fields}")
+            # Populate missing fields with defaults instead of raising
+            for field in missing_fields:
+                if field in ["target_users", "kpis", "measures", "dimensions", "filters",
+                            "business_questions", "fact_tables", "dimension_tables",
+                            "relationships", "assumptions", "success_criteria"]:
+                    response[field] = []
+                else:
+                    response[field] = ""
+        
+        logger.debug("Response validation completed")
+
+    def _populate_dataclass(self, response: Dict[str, Any]) -> None:
+        """
+        Populate the RequirementContext dataclass from parsed response.
+
+        Args:
+            response: Parsed JSON response from Gemini
+        """
+        try:
+            self.specification = RequirementContext(
+                dashboard_title=str(response.get("dashboard_title", "")),
+                business_objective=str(response.get("business_objective", "")),
+                business_domain=str(response.get("business_domain", "")),
+                target_users=self._ensure_list(response.get("target_users", [])),
+                kpis=self._ensure_list(response.get("kpis", [])),
+                measures=self._ensure_list(response.get("measures", [])),
+                dimensions=self._ensure_list(response.get("dimensions", [])),
+                filters=self._ensure_list(response.get("filters", [])),
+                business_questions=self._ensure_list(response.get("business_questions", [])),
+                fact_tables=self._ensure_list(response.get("fact_tables", [])),
+                dimension_tables=self._ensure_list(response.get("dimension_tables", [])),
+                relationships=self._ensure_list(response.get("relationships", [])),
+                assumptions=self._ensure_list(response.get("assumptions", [])),
+                success_criteria=self._ensure_list(response.get("success_criteria", [])),
             )
+            logger.debug("Dataclass populated successfully")
+        except Exception as ex:
+            logger.error(f"Error populating dataclass: {str(ex)}")
+            raise
+
+    def _ensure_list(self, value: Any) -> List[str]:
+        """
+        Ensure value is a list of strings.
+
+        Args:
+            value: Value to convert to list
+
+        Returns:
+            List of strings
+        """
+        if isinstance(value, list):
+            return [str(item) for item in value]
+        elif isinstance(value, str):
+            return [value] if value else []
+        else:
+            return []
+
+    def _convert_to_dict(self) -> Dict[str, Any]:
+        """
+        Convert specification to dictionary.
+
+        Returns:
+            Dictionary representation of the specification
+
+        Raises:
+            Exception: If conversion fails
+        """
+        try:
+            result = asdict(self.specification)
+            logger.debug("Specification converted to dictionary successfully")
+            return result
+        except Exception as ex:
+            logger.error(f"Error converting specification to dictionary: {str(ex)}")
             raise
 
 
-    def get_trace_data(self) -> dict:
-        """Get the trace data for this operation."""
-        return self.trace.get_data()
+def process_requirement(requirement: str) -> Dict[str, Any]:
+    """
+    Process a natural language BI requirement and return structured specification.
 
+    This is the main entry point for requirement processing.
 
-    # Export function for orchestrator integration
-    def analyze_business_requirement(
-        business_requirement: str,
-        business_context: str = ""
-    ) -> dict:
-        """
-        Standalone function to analyze a business requirement.
-        This is the entry point for the orchestrator.
-        
-        Args:
-            business_requirement: The raw business requirement
-            business_context: Optional business context
-            
-        Returns:
-            Structured requirement analysis as JSON dictionary
-        """
+    Args:
+        requirement: Natural language business requirement
+
+    Returns:
+        Dictionary containing structured BI specification
+
+    Raises:
+        ValueError: If requirement is invalid
+        Exception: For processing errors
+    """
+    try:
+        logger.info("Processing requirement via process_requirement")
         agent = RequirementAgent()
-        return agent.analyze_requirement(business_requirement, business_context)
+        return agent.analyze_requirement(requirement)
+    except Exception as ex:
+        logger.error(f"Error in process_requirement: {str(ex)}")
+        raise
